@@ -1,0 +1,19 @@
+{
+    "options": [
+        {
+            "id": "name1",
+            "dozivetje": "Dozivetje 1",
+            "mesta": 10
+        },
+        {
+            "id": "name2",
+            "dozivetje": "Dozivetje 2",
+            "mesta": 15
+        },
+        {
+            "id": "name3",
+            "dozivetje": "Dozivetje 3",
+            "mesta": 8
+        }
+    ]
+}
