@@ -1,30 +1,20 @@
 <?php
 header('Content-Type: text/html; charset=utf-8');
-if ($_SERVER["REQUEST_METHOD"] == "GET") {
-    $result = file_put_contents("izbran_tekmovalec.txt",$_GET['name']);
-    $id = $_GET['id'];
 
-    if($result === FALSE){
+if ($_SERVER["REQUEST_METHOD"] == "GET") {
+    $name = $_GET['name'];
+    $id = intval($_GET['id']);
+
+    // Save selected contestant name to file (for display on quiz screen)
+    $result = file_put_contents("izbran_tekmovalec.txt", $name);
+    // Also save the ID for reference
+    file_put_contents("izbran_tekmovalec_id.txt", $id);
+
+    if ($result === FALSE) {
         die("Napaka pri nastavljanju tekmovalca. Vnesi ročno v programu kviza");
     }
 
-    require 'server_data.php';
-
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("Povezava s strežnikom ni uspela: " . $conn->connect_error);
-    }
-
-    $sql = "DELETE FROM contestants WHERE ID='$id'";
-
-    if ($conn->query($sql) !== TRUE) {
-        echo "Error: " . $sql . " " . $conn->error;
-    }
-    $conn->close();
-
+    // Don't modify the database - contestant stays in the list
 }
 
 header("Location: /nadzor.php");
