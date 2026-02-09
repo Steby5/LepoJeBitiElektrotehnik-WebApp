@@ -26,6 +26,9 @@ body {
       rgba(139, 92, 246, 0.1) 0%,
       transparent 50%
     );
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding-bottom: 3rem;
   color: var(--text-primary);
   text-shadow: none !important;
   box-shadow: none !important;
@@ -258,7 +261,7 @@ footer {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 .status-btn.inactive {
@@ -431,6 +434,7 @@ footer {
   border-radius: 0.75rem;
   font-weight: 500;
   transition: all 0.2s ease;
+  text-decoration: none !important;
 }
 
 .btn-action:hover {
@@ -455,6 +459,47 @@ footer {
 .btn-refresh:hover {
   background: rgba(255, 255, 255, 0.1);
   color: white;
+}
+
+/* Upload box */
+.upload-box {
+  border: 2px dashed var(--border-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  position: relative;
+}
+
+.upload-box:hover {
+  border-color: var(--accent-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.upload-box input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-box label {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-icon {
+  font-size: 2rem;
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
 }
 
 /* Question display */
@@ -502,8 +547,6 @@ footer {
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
   border-radius: 1.25rem;
-  overflow: hidden;
-  margin-bottom: 1.5rem;
   transition: all 0.3s ease;
 }
 
@@ -529,8 +572,10 @@ footer {
   justify-content: center;
   font-size: 1.5rem;
   font-weight: 800;
-  color: white;
   flex-shrink: 0;
+  border: 3px solid;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(5px);
 }
 
 .experience-info h3 {
@@ -578,6 +623,11 @@ footer {
   gap: 0.5rem;
 }
 
+.experience-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
 .people-grid {
   display: flex;
   flex-wrap: wrap;
@@ -614,6 +664,38 @@ footer {
   background: rgba(239, 68, 68, 0.2);
   border-color: var(--accent-danger);
   color: var(--accent-danger);
+}
+
+/* Projection buttons */
+.projection-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.projection-btn {
+  padding: 0.4rem 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.projection-btn:hover,
+.projection-btn.active {
+  background: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.projection-btn.active {
+  font-weight: 600;
 }
 
 /* --- Projection View (Prikaz Dozivetja) --- */
@@ -743,4 +825,166 @@ body.projection-view {
 body.projection-view * {
   font-family: 'Outfit', sans-serif;
   box-sizing: border-box;
+}
+
+/* Pending Box (Dozivetja) */
+.pending-box {
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px dashed rgba(245, 158, 11, 0.3);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.pending-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pending-header h5 {
+  margin: 0;
+  color: var(--accent-warning);
+  font-weight: 600;
+}
+
+.btn-confirm {
+  background: var(--accent-success);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  background: #059669;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+}
+
+.btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--text-secondary);
+}
+
+.pending-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.pending-tag {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent-warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Limit projection buttons height */
+.projection-buttons {
+  max-height: 80px;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.projection-buttons::-webkit-scrollbar {
+  width: 4px;
+}
+
+.projection-buttons::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.projection-buttons::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.projection-buttons::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Compact Card for settings row */
+.compact-card {
+  padding: 1rem !important;
+  min-height: 0 !important; /* Allow shrinking */
+}
+
+.compact-card .section-header {
+  margin-bottom: 0.75rem !important;
+}
+
+.compact-card .section-header .icon {
+  width: 2rem !important;
+  height: 2rem !important;
+  font-size: 1rem !important;
+}
+
+.compact-card .section-header h2 {
+  font-size: 1.1rem !important;
+}
+
+.compact-card .upload-box {
+  padding: 0.5rem !important;
+  border-width: 1px !important;
+}
+
+.compact-card .btn-refresh {
+  padding: 0.25rem 0.5rem !important;
+}
+
+/* Custom Alerts */
+.custom-alert {
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.custom-alert i {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.custom-alert.info {
+  background: rgba(6, 182, 212, 0.1);
+  border-color: rgba(6, 182, 212, 0.2);
+}
+
+.custom-alert.info i {
+  color: var(--accent-info);
+}
+
+.custom-alert.warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.custom-alert.warning i {
+  color: var(--accent-warning);
+}
+
+.custom-alert.success {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.custom-alert.success i {
+  color: var(--accent-success);
 }

@@ -1,4 +1,6 @@
 <?php
+require 'auth_config.php';
+require_login();
 /**
  * Handler for confirming experience selections
  * Receives selected person IDs and marks them as izbran = 1

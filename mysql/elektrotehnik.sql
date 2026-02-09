@@ -107,4 +107,33 @@ COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+--
+-- Struktura tabele `dozivetja`
+--
+
+CREATE TABLE `dozivetja` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `max_spots` int NOT NULL,
+  `barva` varchar(20) NOT NULL DEFAULT '#667eea',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_slovenian_ci;
+
+--
+-- Struktura tabele `dozivetja_prijave`
+--
+
+CREATE TABLE `dozivetja_prijave` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `dozivetje_id` int NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `izbran` tinyint(1) NOT NULL DEFAULT '0',
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `dozivetje_id` (`dozivetje_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_slovenian_ci;
+

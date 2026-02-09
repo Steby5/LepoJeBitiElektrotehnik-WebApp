@@ -1,4 +1,6 @@
 <?php
+require 'auth_config.php';
+require_login();
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
     $view = $_GET['view'];
     $from = isset($_GET['from']) ? $_GET['from'] : 'nadzor';

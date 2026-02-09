@@ -1,3 +1,5 @@
+<?php require 'auth_config.php';
+require_login(); ?>
 <!doctype html>
 <html lang="sl" data-bs-theme="dark">
 
@@ -21,7 +23,7 @@ require 'server_data.php';
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
-  die("Povezava s strežnikom ni uspela: " . $conn->connect_error);
+  die("Povezava s strežnikom ni uspela.");
 }
 $conn->set_charset("utf8");
 
@@ -112,17 +114,9 @@ $view = file_get_contents("pogled.txt");
 </script>
 
 <body>
-  <div class="container py-4">
+  <div class="container-fluid py-4 d-flex flex-column" style="min-height: 100vh;">
     <!-- Header -->
-    <div class="page-header d-flex justify-content-between align-items-start">
-      <div>
-        <h1><i class="bi bi-speedometer2 me-2"></i>Nadzorna plošča</h1>
-        <p class="subtitle">Upravljanje kviza in glasovanja občinstva</p>
-      </div>
-      <button type="button" onclick="refreshFunction()" class="btn-refresh">
-        <i class="bi bi-arrow-clockwise"></i> Osveži
-      </button>
-    </div>
+
 
     <!-- Combined Navigation & Status -->
     <div class="glass-card d-flex flex-wrap align-items-center gap-4 mb-4">
@@ -164,10 +158,29 @@ $view = file_get_contents("pogled.txt");
           </a>
         </div>
       </div>
+
+      <!-- Divider (Desktop only) -->
+      <div class="d-none d-md-block" style="width: 1px; height: 40px; background: var(--border-color);"></div>
+
+      <!-- Actions Section -->
+      <div>
+        <h6 class="text-secondary mb-2 text-uppercase fw-bold" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+          Sistem</h6>
+        <div class="d-flex gap-2">
+          <button onclick="refreshFunction()" class="status-btn" title="Osveži"
+            style="width: auto; padding: 0.5rem 1rem;">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+          <a href="logout.php" class="status-btn" title="Odjava"
+            style="width: auto; padding: 0.5rem 1rem; color: var(--accent-danger); border-color: rgba(239, 68, 68, 0.3);">
+            <i class="bi bi-box-arrow-right"></i>
+          </a>
+        </div>
+      </div>
     </div>
 
     <!-- Main Content Dashboard Grid -->
-    <div class="row g-4">
+    <div class="row g-4 flex-grow-1">
       <!-- Left Column: Contestants (Larger) -->
       <div class="col-lg-8">
         <div class="glass-card h-100">

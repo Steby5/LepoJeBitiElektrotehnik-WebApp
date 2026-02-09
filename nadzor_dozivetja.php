@@ -1,3 +1,5 @@
+<?php require 'auth_config.php';
+require_login(); ?>
 <!doctype html>
 <html lang="sl" data-bs-theme="dark">
 
@@ -93,17 +95,9 @@ $view = file_get_contents("pogled.txt");
 </script>
 
 <body>
-    <div class="container py-4">
+    <div class="container-fluid py-4">
         <!-- Header -->
-        <div class="page-header d-flex justify-content-between align-items-start">
-            <div>
-                <h1><i class="bi bi-stars me-2"></i>Doživetja</h1>
-                <p class="subtitle">Upravljanje prijav in izbira udeležencev</p>
-            </div>
-            <button type="button" onclick="refreshFunction()" class="btn-refresh">
-                <i class="bi bi-arrow-clockwise"></i> Osveži
-            </button>
-        </div>
+
 
         <!-- Combined Navigation & Status -->
         <div class="glass-card d-flex flex-wrap align-items-center gap-4 mb-4">
@@ -147,13 +141,32 @@ $view = file_get_contents("pogled.txt");
                     </a>
                 </div>
             </div>
+
+            <!-- Divider (Desktop only) -->
+            <div class="d-none d-md-block" style="width: 1px; height: 40px; background: var(--border-color);"></div>
+
+            <!-- Actions Section -->
+            <div>
+                <h6 class="text-secondary mb-2 text-uppercase fw-bold"
+                    style="font-size: 0.75rem; letter-spacing: 0.05em;">Sistem</h6>
+                <div class="d-flex gap-2">
+                    <button onclick="refreshFunction()" class="status-btn" title="Osveži"
+                        style="width: auto; padding: 0.5rem 1rem;">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <a href="logout.php" class="status-btn" title="Odjava"
+                        style="width: auto; padding: 0.5rem 1rem; color: var(--accent-danger); border-color: rgba(239, 68, 68, 0.3);">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
         </div>
 
         <!-- Settings: Projection Analysis & Upload (Moved Up) -->
         <h2 class="mb-3" style="font-size: 1.25rem;">Nastavitve</h2>
         <div class="row g-3 mb-4">
             <!-- Projection -->
-            <div class="col-md-5">
+            <div class="col-md-6">
                 <?php
                 $prikazId = trim(file_get_contents("prikaz_dozivetje.txt"));
                 $prikazName = "Prazen prikaz";
@@ -171,7 +184,7 @@ $view = file_get_contents("pogled.txt");
                     $connPrikaz->close();
                 }
                 ?>
-                <div class="glass-card projection-card">
+                <div class="glass-card compact-card projection-card h-100">
                     <div class="section-header">
                         <div class="icon" style="background: linear-gradient(135deg, var(--accent-info), #0891b2);">
                             <i class="bi bi-display text-white"></i>
@@ -182,9 +195,9 @@ $view = file_get_contents("pogled.txt");
                             <i class="bi bi-box-arrow-up-right"></i>
                         </a>
                     </div>
-                    <p class="text-secondary mb-3">Trenutno: <strong
+                    <p class="text-secondary mb-1">Trenutno: <strong
                             class="text-white"><?php echo htmlspecialchars($prikazName); ?></strong></p>
-                    <div class="projection-buttons">
+                    <div class="projection-buttons" style="padding: 0.5rem;">
                         <a href="nastavi_prikaz_dozivetja.php?id=0"
                             class="projection-btn <?php echo ($prikazId == '0') ? 'active' : ''; ?>">
                             <i class="bi bi-square me-1"></i> Prazen
@@ -204,8 +217,8 @@ $view = file_get_contents("pogled.txt");
             </div>
 
             <!-- Upload -->
-            <div class="col-md-5">
-                <div class="glass-card">
+            <div class="col-md-4">
+                <div class="glass-card compact-card h-100 d-flex flex-column">
                     <div class="section-header">
                         <div class="icon"
                             style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));">
@@ -213,10 +226,13 @@ $view = file_get_contents("pogled.txt");
                         </div>
                         <h2>Naloži JSON</h2>
                     </div>
-                    <form action="nalozi_dozivetja.php" method="post" enctype="multipart/form-data">
-                        <div class="upload-box">
-                            <label for="json_file">
-                                <i class="bi bi-file-earmark-code upload-icon"></i>
+                    <form action="nalozi_dozivetja.php" method="post" enctype="multipart/form-data"
+                        class="flex-grow-1 d-flex flex-column">
+                        <div class="upload-box flex-grow-1 d-flex">
+                            <label for="json_file"
+                                class="d-flex flex-row align-items-center justify-content-center gap-3 flex-grow-1 w-100"
+                                style="padding: 0.5rem;">
+                                <i class="bi bi-file-earmark-code upload-icon mb-0"></i>
                                 <span class="text-secondary">Izberi JSON datoteko</span>
                                 <input type="file" name="json_file" id="json_file" accept=".json,application/json"
                                     required onchange="this.form.submit()">
@@ -228,12 +244,18 @@ $view = file_get_contents("pogled.txt");
 
             <!-- Clear -->
             <div class="col-md-2">
-                <div class="glass-card h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="glass-card compact-card h-100 d-flex flex-column">
+                    <div class="section-header">
+                        <div class="icon"
+                            style="background: linear-gradient(135deg, var(--accent-danger), var(--accent-secondary));">
+                            <i class="bi bi-trash3 text-white"></i>
+                        </div>
+                        <h2 style="font-size: 0.8rem; white-space: nowrap;">Počisti vse</h2>
+                    </div>
                     <button type="button"
-                        class="btn-action w-100 h-100 d-flex flex-column align-items-center justify-content-center"
-                        data-bs-toggle="modal" data-bs-target="#clearDozivetja" style="min-height: 100px;">
-                        <i class="bi bi-trash3" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                        Počisti vse
+                        class="btn-action d-flex flex-column align-items-center justify-content-center flex-grow-1 w-100"
+                        data-bs-toggle="modal" data-bs-target="#clearDozivetja" title="Počisti vse">
+                        <i class="bi bi-trash3" style="font-size: 1.5rem;"></i>
                     </button>
                 </div>
             </div>
@@ -254,15 +276,7 @@ $view = file_get_contents("pogled.txt");
             </div>
         <?php endif; ?>
 
-        <!-- Instructions -->
-        <div class="custom-alert info">
-            <i class="bi bi-info-circle-fill"></i>
-            <div>
-                <strong>Navodila:</strong> Klikni na imena v "Prijavljeni" za izbiro. Izbrane osebe so označene z
-                oranžno. Ko končaš, klikni "Potrdi izbiro".
-            </div>
-        </div>
-
+        
         <!-- Experience Cards (Grid Layout) -->
         <div class="row g-4">
             <?php
@@ -294,104 +308,105 @@ $view = file_get_contents("pogled.txt");
                     $stmtIzb->close();
                     ?>
 
-                    <div class="col-lg-6 col-xl-4">
-                        <div class="experience-card h-100 d-flex flex-column">
-                            <div class="experience-header">
-                                <div class="letter-badge" style="background: <?php echo htmlspecialchars($barva); ?>;">
-                                    <?php echo $letter; ?>
-                                </div>
-                                <div class="experience-info flex-grow-1">
-                                    <h3 class="text-truncate" title="<?php echo htmlspecialchars($option['name']); ?>">
-                                        <?php echo htmlspecialchars($option['name']); ?>
-                                    </h3>
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <span class="spots-badge <?php echo $prostaMesta > 0 ? 'available' : 'full'; ?>">
-                                            <i class="bi bi-person-fill me-1"></i>
-                                            <?php echo $prostaMesta; ?> / <?php echo $option['max_spots']; ?>
-                                        </span>
+                            <div class="col-lg-6 col-xl-4 d-flex">
+                                <div class="experience-card flex-fill d-flex flex-column">
+                                    <div class="experience-header">
+                                        <div class="letter-badge"
+                                            style="border-color: <?php echo htmlspecialchars($barva); ?>; color: <?php echo htmlspecialchars($barva); ?>; box-shadow: 0 0 15px <?php echo htmlspecialchars($barva); ?>40;">
+                                            <?php echo $letter; ?>
+                                        </div>
+                                        <div class="experience-info flex-grow-1">
+                                            <h3 class="text-truncate" title="<?php echo htmlspecialchars($option['name']); ?>">
+                                                <?php echo htmlspecialchars($option['name']); ?>
+                                            </h3>
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <span class="spots-badge <?php echo $prostaMesta > 0 ? 'available' : 'full'; ?>">
+                                                    <i class="bi bi-person-fill me-1"></i>
+                                                    <?php echo $prostaMesta; ?> / <?php echo $option['max_spots']; ?>
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div class="experience-body flex-grow-1">
-                                <div class="row h-100">
-                                    <div class="col-12 mb-3">
-                                        <div class="people-section h-100">
-                                            <h4><i class="bi bi-people"></i> Prijavljeni</h4>
-                                            <div class="people-grid" style="max-height: 150px; overflow-y: auto;">
-                                                <?php
-                                                if (count($prijavljeni) > 0) {
-                                                    foreach ($prijavljeni as $oseba) {
-                                                        $stmtCheck = $connDoz->prepare("SELECT COUNT(*) as cnt FROM dozivetja_prijave WHERE name = ? AND izbran = 1");
-                                                        $stmtCheck->bind_param("s", $oseba['name']);
-                                                        $stmtCheck->execute();
-                                                        $checkResult = $stmtCheck->get_result()->fetch_assoc();
-                                                        $isAlreadySelected = $checkResult['cnt'] > 0;
-                                                        $stmtCheck->close();
+                                    <div class="experience-body flex-grow-1">
+                                        <div class="row">
+                                            <div class="col-12 mb-3">
+                                                <div class="people-section">
+                                                    <h4><i class="bi bi-people"></i> Prijavljeni</h4>
+                                                    <div class="people-grid" style="max-height: 150px; overflow-y: auto;">
+                                                        <?php
+                                                        if (count($prijavljeni) > 0) {
+                                                            foreach ($prijavljeni as $oseba) {
+                                                                $stmtCheck = $connDoz->prepare("SELECT COUNT(*) as cnt FROM dozivetja_prijave WHERE name = ? AND izbran = 1");
+                                                                $stmtCheck->bind_param("s", $oseba['name']);
+                                                                $stmtCheck->execute();
+                                                                $checkResult = $stmtCheck->get_result()->fetch_assoc();
+                                                                $isAlreadySelected = $checkResult['cnt'] > 0;
+                                                                $stmtCheck->close();
 
-                                                        if ($isAlreadySelected) {
-                                                            echo '<button class="person-btn warning" disabled title="Že izbran/-a drugje"><i class="bi bi-exclamation-triangle me-1"></i>' . htmlspecialchars($oseba['name']) . '</button>';
-                                                        } elseif ($prostaMesta > 0) {
-                                                            echo '<button class="person-btn" onclick="toggleSelection(' . $option['id'] . ', ' . $oseba['id'] . ', \'' . addslashes(htmlspecialchars($oseba['name'])) . '\', this)">' . htmlspecialchars($oseba['name']) . '</button>';
+                                                                if ($isAlreadySelected) {
+                                                                    echo '<button class="person-btn warning" disabled title="Že izbran/-a drugje"><i class="bi bi-exclamation-triangle me-1"></i>' . htmlspecialchars($oseba['name']) . '</button>';
+                                                                } elseif ($prostaMesta > 0) {
+                                                                    echo '<button class="person-btn" onclick="toggleSelection(' . $option['id'] . ', ' . $oseba['id'] . ', \'' . addslashes(htmlspecialchars($oseba['name'])) . '\', this)">' . htmlspecialchars($oseba['name']) . '</button>';
+                                                                } else {
+                                                                    echo '<button class="person-btn" disabled>' . htmlspecialchars($oseba['name']) . '</button>';
+                                                                }
+                                                            }
                                                         } else {
-                                                            echo '<button class="person-btn" disabled>' . htmlspecialchars($oseba['name']) . '</button>';
+                                                            echo '<span class="text-secondary small">Ni prijavljenih</span>';
                                                         }
-                                                    }
-                                                } else {
-                                                    echo '<span class="text-secondary small">Ni prijavljenih</span>';
-                                                }
-                                                ?>
-                                            </div>
+                                                        ?>
+                                                    </div>
 
-                                            <div class="pending-box mt-3">
-                                                <div class="pending-header mb-2">
-                                                    <h5 class="small"><i class="bi bi-clock-history me-1"></i> Označeni: <span
-                                                            id="pending-count-<?php echo $option['id']; ?>">0</span></h5>
-                                                    <button type="button" id="confirm-btn-<?php echo $option['id']; ?>"
-                                                        class="btn-confirm btn-sm py-1 px-2" disabled
-                                                        onclick="confirmSelections(<?php echo $option['id']; ?>, '<?php echo addslashes($option['code']); ?>')">
-                                                        <i class="bi bi-check2-circle"></i> Potrdi
-                                                    </button>
+                                                    <div class="pending-box mt-3">
+                                                        <div class="pending-header mb-2">
+                                                            <h5 class="small"><i class="bi bi-clock-history me-1"></i> Označeni: <span
+                                                                    id="pending-count-<?php echo $option['id']; ?>">0</span></h5>
+                                                            <button type="button" id="confirm-btn-<?php echo $option['id']; ?>"
+                                                                class="btn-confirm btn-sm py-1 px-2" disabled
+                                                                onclick="confirmSelections(<?php echo $option['id']; ?>, '<?php echo addslashes($option['code']); ?>')">
+                                                                <i class="bi bi-check2-circle"></i> Potrdi
+                                                            </button>
+                                                        </div>
+                                                        <div id="pending-list-<?php echo $option['id']; ?>" class="pending-list"
+                                                            style="min-height: 1rem;">
+                                                            <span class="text-secondary" style="font-size: 0.75rem;">Klikni na
+                                                                imena</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div id="pending-list-<?php echo $option['id']; ?>" class="pending-list"
-                                                    style="min-height: 1rem;">
-                                                    <span class="text-secondary" style="font-size: 0.75rem;">Klikni na
-                                                        imena</span>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="people-section">
+                                                    <h4><i class="bi bi-check-circle"></i> Izbrani</h4>
+                                                    <div class="people-grid" style="max-height: 100px; overflow-y: auto;">
+                                                        <?php
+                                                        if (count($izbrani) > 0) {
+                                                            foreach ($izbrani as $oseba) {
+                                                                echo '<a href="odstrani_dozivetje.php?id=' . urlencode($option['code']) . '&ime=' . urlencode($oseba['name']) . '&pid=' . $oseba['id'] . '" class="person-btn selected small">' . htmlspecialchars($oseba['name']) . ' <i class="bi bi-check"></i></a>';
+                                                            }
+                                                        } else {
+                                                            echo '<span class="text-secondary small">Ni izbranih</span>';
+                                                        }
+                                                        ?>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-12">
-                                        <div class="people-section">
-                                            <h4><i class="bi bi-check-circle"></i> Izbrani</h4>
-                                            <div class="people-grid" style="max-height: 100px; overflow-y: auto;">
-                                                <?php
-                                                if (count($izbrani) > 0) {
-                                                    foreach ($izbrani as $oseba) {
-                                                        echo '<a href="odstrani_dozivetje.php?id=' . urlencode($option['code']) . '&ime=' . urlencode($oseba['name']) . '&pid=' . $oseba['id'] . '" class="person-btn selected small">' . htmlspecialchars($oseba['name']) . ' <i class="bi bi-check"></i></a>';
-                                                    }
-                                                } else {
-                                                    echo '<span class="text-secondary small">Ni izbranih</span>';
-                                                }
-                                                ?>
-                                            </div>
-                                        </div>
+
+                                    <div class="experience-footer mt-auto">
+                                        <a href="pocisti_eno_dozivetje.php?id=<?php echo $option['id']; ?>"
+                                            class="btn-action w-100 text-center"
+                                            onclick="return confirm('Res želiš izbrisati vse prijave za <?php echo htmlspecialchars($option['name']); ?>?');">
+                                            <i class="bi bi-trash3 me-1"></i> Izbriši prijave
+                                        </a>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="experience-footer mt-auto">
-                                <a href="pocisti_eno_dozivetje.php?id=<?php echo $option['id']; ?>"
-                                    class="btn-action w-100 text-center"
-                                    onclick="return confirm('Res želiš izbrisati vse prijave za <?php echo htmlspecialchars($option['name']); ?>?');">
-                                    <i class="bi bi-trash3 me-1"></i> Izbriši prijave
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <?php
-                    $letterIndex++;
+                            <?php
+                            $letterIndex++;
                 }
             } else {
                 echo '<div class="col-12"><div class="glass-card text-center py-5">';

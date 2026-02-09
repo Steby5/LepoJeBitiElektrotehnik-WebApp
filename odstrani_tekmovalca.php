@@ -1,4 +1,6 @@
 <?php
+require 'auth_config.php';
+require_login();
 header('Content-Type: text/html; charset=utf-8');
 require 'server_data.php';
 

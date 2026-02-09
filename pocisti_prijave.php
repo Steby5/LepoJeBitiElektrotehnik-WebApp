@@ -1,4 +1,6 @@
 <?php
+require 'auth_config.php';
+require_login();
 require 'server_data.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
@@ -13,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
   $sql = "DELETE FROM contestants";
 
   if ($conn->query($sql) !== TRUE) {
-      echo "Error: " . $sql . " " . $conn->error;
+    echo "Error: " . $sql . " " . $conn->error;
   }
 
   $conn->close();

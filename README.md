@@ -1,132 +1,57 @@
-# Lepo je biti elektrotehnik - WEB app
+# Lepo je biti elektrotehnik - Web Application
 
-Spletni vmesnik kviza "Lepo je biti elektrotehnik". Prilagojeno za uporabo na mobilnih napravah in upravljanje z računalnikom.
+Modern web application for managing the "Lepo je biti elektrotehnik" quiz and interactive experiences. Features a premium glassmorphic UI, real-time AJAX updates, and specialized mobile/admin views.
 
-## Funkcionalnosti
+## 🚀 Key Features
 
-### Kviz
+### 🎮 Quiz Management
 
-- **Prijava na kviz** - udeleženci oddajo svoje ime
-- **Izbira tekmovalca** - nadzornik izbere tekmovalca iz seznama prijavljenih
-- **Glas ljudstva** - občinstvo glasuje za pravilni odgovor (A/B/C/D)
-- **Prikaz rezultatov** - prikaže odstotke glasov
+- **Live Contestant Registration**: Real-time contestant enrollment.
+- **Admin Dashboard**: Select contestants and manage game states.
+- **Audience Voting (Glas ljudstva)**: Interactive voting for multiple-choice questions.
+- **Real-time Stats**: Instant display of voting percentages with AJAX auto-refresh.
 
-### Doživetja
+### 🎡 Experience Tracking (Doživetja)
 
-- **Prijava na doživetja** - udeleženci izberejo doživetja in oddajo ime
-- **Upravljanje doživetij** - JSON uvoz, izbira/odstranitev udeležencev
-- **Omejitev mest** - prikaz prostih mest za vsako doživetje
+- **JSON Import**: Easy setup of experiences via JSON files.
+- **Capacity Management**: Automatic spot counting and availability tracking.
+- **Admin Control**: Select and clear participants with ease.
+- **Dedicated Displays**: Specialized views for projection or mobile info.
 
-### Zaščita pred podvajanjem
+### 🛡️ Security & Performance
 
-- **Session-based blokiranje** - vsaka naprava lahko odda samo 1 prijavo/glas na sejo
-- **Nova seja pri menjavi stanja** - ko nadzornik aktivira nov način, se odpre nova seja
+- **Anti-Duplication**: Session-based protection for voting and registration.
+- **Role-based Access**: Password-protected admin panels.
+- **High Concurrency**: Tested for up to 600 concurrent users.
 
-## Struktura projekta
+## 🛠️ Tech Stack
 
-### Glavne strani
+- **Backend**: PHP 8.1+
+- **Database**: MySQL 5.7+ / MariaDB
+- **Frontend**: Bootstrap 5.3, Bootstrap Icons, Inter Font
+- **Design**: Custom Glassmorphism UI (premium.css)
 
-| Datoteka    | Opis                                |
-| ----------- | ----------------------------------- |
-| `index.php` | Domača stran s prijavami            |
-| `vodic.php` | Prikaz za mobilne naprave (QR scan) |
+## 📥 Installation
 
-### Nadzorne plošče
+1. **Clone the repository** to your web server root (e.g., `htdocs` for XAMPP).
+2. **Database Setup**:
+   - Create a database named `elektrotehnik`.
+   - Import `mysql/elektrotehnik.sql`.
+3. **Configuration**:
+   - Copy `server_data.sample.php` to `server_data.php`.
+   - Update `server_data.php` with your database credentials and set the `ADMIN_PASSWORD`.
+4. **Access**:
+   - User view: `index.php`
+   - Admin view: `nadzor.php` (default pass: `elektro`)
 
-| Datoteka               | Opis                               |
-| ---------------------- | ---------------------------------- |
-| `nadzor.php`           | Nadzor kviza (prijave, glasovanje) |
-| `nadzor_dozivetja.php` | Nadzor doživetij                   |
+## 📂 Project Structure
 
-### API (AJAX)
+- `index.php`: Main landing page for participants.
+- `nadzor.php`: Quiz admin dashboard.
+- `nadzor_dozivetja.php`: Experience admin dashboard.
+- `css/premium.css`: Core design system.
+- `api_*.php`: Backend endpoints for live updates.
 
-| Datoteka                   | Opis                             |
-| -------------------------- | -------------------------------- |
-| `api_nadzor.php`           | JSON podatki za kviz nadzor      |
-| `api_nadzor_dozivetja.php` | JSON podatki za doživetja nadzor |
+## 📄 License
 
-### Obdelava obrazcev
-
-| Datoteka                | Opis                          |
-| ----------------------- | ----------------------------- |
-| `prijava.php`           | Obdelava prijave na kviz      |
-| `prijava_dozivetje.php` | Obdelava prijave na doživetja |
-| `glasovanje.php`        | Obdelava glasovanja           |
-| `vnesi_vprasanje.php`   | Vnos novega vprašanja         |
-
-### Upravljanje
-
-| Datoteka                       | Opis                           |
-| ------------------------------ | ------------------------------ |
-| `izberi_tekmovalca.php`        | Izbira tekmovalca              |
-| `odstrani_tekmovalca.php`      | Odstrani tekmovalca            |
-| `pocisti_prijave.php`          | Počisti vse prijave            |
-| `izberi_dozivetje.php`         | Izbira udeleženca za doživetje |
-| `odstrani_dozivetje.php`       | Odstrani udeleženca            |
-| `pocisti_dozivetja.php`        | Počisti vse prijave doživetij  |
-| `pocisti_eno_dozivetje.php`    | Počisti eno doživetje          |
-| `nalozi_dozivetja.php`         | Naloži JSON z doživetji        |
-| `nastavi_prikaz_dozivetja.php` | Nastavi prikaz doživetja       |
-| `spremeni_pogled.php`          | Menjava stanja/pogleda         |
-
-### "Hvala" strani
-
-| Datoteka               | Opis                           |
-| ---------------------- | ------------------------------ |
-| `hvala_prijava.php`    | Po prijavi na kviz             |
-| `hvala_dozivetje.php`  | Po prijavi na doživetja        |
-| `hvala_glasovanje.php` | Po glasovanju                  |
-| `rezultati.php`        | Prikaz rezultatov glasovanja   |
-| `prikaz_dozivetja.php` | Prikaz doživetja za udeležence |
-
-### Konfiguracijske datoteke
-
-| Datoteka                 | Opis                         |
-| ------------------------ | ---------------------------- |
-| `pogled.txt`             | Trenutni način prikaza (0-3) |
-| `prijava_session.txt`    | ID seje za prijave           |
-| `glasovanje_session.txt` | ID seje za glasovanje        |
-| `dozivetja_session.txt`  | ID seje za doživetja         |
-| `izbran_tekmovalec.txt`  | Ime trenutnega tekmovalca    |
-| `prikaz_dozivetje.txt`   | ID prikazanega doživetja     |
-
-## Načini prikaza
-
-| Vrednost | Način           | Opis                       |
-| -------- | --------------- | -------------------------- |
-| 0        | Ni aktivnosti   | Mirovanje                  |
-| 1        | Prijava na kviz | Odprt obrazec za prijavo   |
-| 2        | Glas ljudstva   | Odprto glasovanje          |
-| 3        | Doživetja       | Odprt obrazec za doživetja |
-
-## Zahteve
-
-- **PHP** 8.1+
-- **MySQL** strežnik
-- **XAMPP** (za lokalni razvoj) ali VPS
-- SSL certifikat (priporočeno Let's Encrypt)
-
-### Za produkcijo
-
-- VPS s 4 jedri, 8 GB RAM, 1Gbps omrežje
-- Testirano do 600 sočasnih uporabnikov
-
-## Namestitev
-
-1. Kopiraj datoteke v `htdocs` (XAMPP) ali web root
-2. Uvozi bazo iz `mysql/` mape
-3. Nastavi `server_data.php` s podatki za povezavo
-4. Obišči `nadzor.php` za upravljanje
-
-## Baza podatkov
-
-### Tabele
-
-- `contestants` - prijavljeni na kviz (ID, name, time, izbran)
-- `question` - vprašanja za glasovanje
-- `dozivetja` - aktivna doživetja
-- `dozivetja_prijave` - prijave na doživetja
-
-## Licenca
-
-MIT License - UL FE 2026
+MIT License - Developed by UL FE 2026
