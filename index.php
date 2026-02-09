@@ -1,4 +1,9 @@
-<?php require 'server_data.php'; ?>
+<?php
+ob_start();
+header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+header("Pragma: no-cache"); // HTTP 1.0.
+header("Expires: 0"); // Proxies.
+require 'server_data.php'; ?>
 <!doctype html>
 <html lang="en" class="h-100" data-bs-theme="auto">
 
@@ -14,91 +19,14 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
-  <style>
-    .bd-placeholder-img {
-      font-size: 1.125rem;
-      text-anchor: middle;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      user-select: none;
-    }
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-    @media (min-width: 768px) {
-      .bd-placeholder-img-lg {
-        font-size: 3.5rem;
-      }
-    }
 
-    .b-example-divider {
-      width: 100%;
-      height: 3rem;
-      background-color: rgba(0, 0, 0, .1);
-      border: solid rgba(0, 0, 0, .15);
-      border-width: 1px 0;
-      box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
-    }
-
-    .b-example-vr {
-      flex-shrink: 0;
-      width: 1.5rem;
-      height: 100vh;
-    }
-
-    .bi {
-      vertical-align: -.125em;
-      fill: currentColor;
-    }
-
-    .nav-scroller {
-      position: relative;
-      z-index: 2;
-      height: 2.75rem;
-      overflow-y: hidden;
-    }
-
-    .nav-scroller .nav {
-      display: flex;
-      flex-wrap: nowrap;
-      padding-bottom: 1rem;
-      margin-top: -1px;
-      overflow-x: auto;
-      text-align: center;
-      white-space: nowrap;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .btn-bd-primary {
-      --bd-violet-bg: #712cf9;
-      --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
-
-      --bs-btn-font-weight: 600;
-      --bs-btn-color: var(--bs-white);
-      --bs-btn-bg: var(--bd-violet-bg);
-      --bs-btn-border-color: var(--bd-violet-bg);
-      --bs-btn-hover-color: var(--bs-white);
-      --bs-btn-hover-bg: #6528e0;
-      --bs-btn-hover-border-color: #6528e0;
-      --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
-      --bs-btn-active-color: var(--bs-btn-hover-color);
-      --bs-btn-active-bg: #5a23c8;
-      --bs-btn-active-border-color: #5a23c8;
-    }
-
-    .bd-mode-toggle {
-      z-index: 1500;
-    }
-
-    .bd-mode-toggle .dropdown-menu .active .bi {
-      display: block !important;
-    }
-
-    .btn-outline-success-kviz {
-      --bs-btn-color: #fff;
-      --bs-btn-border-color: #bbbbbb;
-    }
-  </style>
   <!-- Custom styles for this template -->
   <link href="css/cover.css" rel="stylesheet">
+  <link href="css/premium.css" rel="stylesheet">
 
 </head>
 
@@ -133,7 +61,7 @@ $view = file_get_contents("pogled.txt");
     if ($view == "0") {
       ?>
       <!-- neaktivno -->
-      <main class="px-3">
+      <main class="px-3 glass-card">
         <h1>Ni aktivnosti</h1>
         <p class="lead">Trenutno ni možnosti za sodelovanje.</p>
       </main>
@@ -142,7 +70,7 @@ $view = file_get_contents("pogled.txt");
     } else if ($view == "1") {
       ?>
         <!-- Prijava v kviz -->
-        <main class="px-3">
+        <main class="px-3 glass-card">
           <form action="prijava.php" accept-charset="utf-8" method="post">
             <h1>Prijavi se v kviz</h1>
             <p> </p>
@@ -172,42 +100,62 @@ $view = file_get_contents("pogled.txt");
 
       if ($resultQ->num_rows > 0) {
         $row = $resultQ->fetch_assoc();
-        ?>
-            <main class="px-3">
-              <!-- Glas ljudstva -->
-              <form action="glasovanje.php" accept-charset="utf-8" method="post">
-                <input type="hidden" id="Qid" name="Qid" value="<?php echo $row["ID"]; ?>">
-                <h1><?php echo $row["questionText"]; ?></h1>
-                <p class="lead">
-                <div class="d-grid gap-2 col-11 mx-auto">
-                  <input type="radio" class="btn-check" name="odgovor" value="A" id="A" autocomplete="off" required>
-                  <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
-                    for="A"><?php echo $row["AText"]; ?></label>
-                  <input type="radio" class="btn-check" name="odgovor" value="B" id="B" autocomplete="off" required>
-                  <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
-                    for="B"><?php echo $row["BText"]; ?></label>
-                  <input type="radio" class="btn-check" name="odgovor" value="C" id="C" autocomplete="off" required>
-                  <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
-                    for="C"><?php echo $row["CText"]; ?></label>
-                  <input type="radio" class="btn-check" name="odgovor" value="D" id="D" autocomplete="off" required>
-                  <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
-                    for="D"><?php echo $row["DText"]; ?></label>
+
+        // Check if user already voted
+        $currentSessionId = "";
+        if (file_exists("glasovanje_session.txt")) {
+          $currentSessionId = trim(file_get_contents("glasovanje_session.txt"));
+        }
+
+        if ($currentSessionId !== "" && isset($_COOKIE['ljbe_glasovanje_session']) && $_COOKIE['ljbe_glasovanje_session'] === $currentSessionId) {
+          ?>
+              <main class="px-3 glass-card">
+                <h1>Hvala!</h1>
+                <p class="lead">Tvoj glas je bil zabeležen.</p>
+                <div class="mt-4">
+                  <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
                 </div>
-                </p>
-                <p class="lead">-</p>
-                <p class="lead">
-                <div class="d-grid gap-2 col-6 mx-auto">
-                  <input type="submit" name="submit" id="submit" value="Glasuj"
-                    class="btn btn-lg btn-light fw-bold border-white bg-white">
-                </div>
-                </p>
-              </form>
-              <!-- END Glas ljudstva -->
-            </main>
-        <?php
+              </main>
+          <?php
+        } else {
+          ?>
+              <main class="px-3 glass-card">
+
+                <!-- Glas ljudstva -->
+                <form action="glasovanje.php" accept-charset="utf-8" method="post">
+                  <input type="hidden" id="Qid" name="Qid" value="<?php echo $row["ID"]; ?>">
+                  <h1><?php echo $row["questionText"]; ?></h1>
+                  <p class="lead">
+                  <div class="d-grid gap-2 col-11 mx-auto">
+                    <input type="radio" class="btn-check" name="odgovor" value="A" id="A" autocomplete="off" required>
+                    <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
+                      for="A"><?php echo $row["AText"]; ?></label>
+                    <input type="radio" class="btn-check" name="odgovor" value="B" id="B" autocomplete="off" required>
+                    <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
+                      for="B"><?php echo $row["BText"]; ?></label>
+                    <input type="radio" class="btn-check" name="odgovor" value="C" id="C" autocomplete="off" required>
+                    <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
+                      for="C"><?php echo $row["CText"]; ?></label>
+                    <input type="radio" class="btn-check" name="odgovor" value="D" id="D" autocomplete="off" required>
+                    <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
+                      for="D"><?php echo $row["DText"]; ?></label>
+                  </div>
+                  </p>
+                  <p class="lead">-</p>
+                  <p class="lead">
+                  <div class="d-grid gap-2 col-6 mx-auto">
+                    <input type="submit" name="submit" id="submit" value="Glasuj"
+                      class="btn btn-lg btn-light fw-bold border-white bg-white">
+                  </div>
+                  </p>
+                </form>
+                <!-- END Glas ljudstva -->
+              </main>
+          <?php
+        }
       } else {
         ?>
-            <main class="px-3">
+            <main class="px-3 glass-card">
               <!-- Glas ljudstva -->
               <h1>V sistemu ni vprašanj</h1>
               <p class="lead">Poskusi ponovno čez nekaj trenutnkov</p>
@@ -227,7 +175,7 @@ $view = file_get_contents("pogled.txt");
       $connDoz->close();
       ?>
             <!-- Prijava na doživetje -->
-            <main class="px-3">
+            <main class="px-3 glass-card">
               <form action="prijava_dozivetje.php" accept-charset="utf-8" method="post">
                 <h1>Prijavi se na posebno doživetje</h1>
                 <p class="lead mt-3 mb-2">Izberi doživetja:</p>
@@ -264,7 +212,7 @@ $view = file_get_contents("pogled.txt");
     } else {
       ?>
             <!-- Napaka -->
-            <main class="px-3">
+            <main class="px-3 glass-card">
               <h1>Napaka</h1>
               <p class="lead">Prišlo je do napake. Se opravičujemo!</p>
             </main>

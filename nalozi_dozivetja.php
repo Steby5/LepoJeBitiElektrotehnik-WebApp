@@ -42,8 +42,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->query("UPDATE dozivetja SET active = 0");
 
     // Insert or update each dozivetje
-    $stmt = $conn->prepare("INSERT INTO dozivetja (name, code, max_spots, active) VALUES (?, ?, ?, 1) 
-                            ON DUPLICATE KEY UPDATE name = VALUES(name), max_spots = VALUES(max_spots), active = 1");
+    $stmt = $conn->prepare("INSERT INTO dozivetja (name, code, max_spots, barva, active) VALUES (?, ?, ?, ?, 1) 
+                            ON DUPLICATE KEY UPDATE name = VALUES(name), max_spots = VALUES(max_spots), barva = VALUES(barva), active = 1");
 
     foreach ($data['options'] as $option) {
         if (!isset($option['id']) || !isset($option['dozivetje']) || !isset($option['mesta'])) {
@@ -53,8 +53,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $code = $option['id'];
         $name = $option['dozivetje'];
         $mesta = intval($option['mesta']);
+        $barva = isset($option['barva']) ? $option['barva'] : '#667eea';
 
-        $stmt->bind_param("ssi", $name, $code, $mesta);
+        $stmt->bind_param("ssis", $name, $code, $mesta, $barva);
         $stmt->execute();
     }
 

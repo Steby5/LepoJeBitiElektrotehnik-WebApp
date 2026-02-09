@@ -9,41 +9,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
-    <style>
-        body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-        }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="css/premium.css" rel="stylesheet">
 
-        .name-card {
-            font-size: 1.5rem;
-            padding: 1rem 1.5rem;
-            margin: 0.5rem 0;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: white;
-            text-align: center;
-        }
 
-        .container-main {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-
-        h1 {
-            color: white;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .no-people {
-            color: rgba(255, 255, 255, 0.6);
-            text-align: center;
-            font-size: 1.2rem;
-            padding: 2rem;
-        }
-    </style>
 </head>
 
 <?php
@@ -99,45 +69,47 @@ $conn->close();
 
 <body>
     <div class="container-main">
-        <h1>Vodič</h1>
+        <div class="glass-card">
+            <h1>Vodič</h1>
 
-        <div class="d-flex gap-2 mb-4">
-            <select class="form-select form-select-lg" id="dozivetjeSelect"
-                onchange="window.location.href='vodic.php?dozivetje=' + this.value">
-                <option value="" <?php echo $selectedCode === '' ? 'selected' : ''; ?>>Izberi doživetje</option>
-                <?php foreach ($dozivetja as $d): ?>
-                    <option value="<?php echo htmlspecialchars($d['code']); ?>" <?php echo ($selectedCode === $d['code']) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($d['name']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <button class="btn btn-warning btn-lg" onclick="window.location.reload()">
-                ↻
-            </button>
-        </div>
-
-        <?php if ($selectedCode !== ''): ?>
-            <?php if (count($izbrani) > 0): ?>
-                <div class="names-list">
-                    <?php foreach ($izbrani as $ime): ?>
-                        <div class="name-card">
-                            <?php echo htmlspecialchars($ime); ?>
-                        </div>
+            <div class="d-flex gap-2 mb-4">
+                <select class="form-select form-select-lg" id="dozivetjeSelect"
+                    onchange="window.location.href='vodic.php?dozivetje=' + this.value">
+                    <option value="" <?php echo $selectedCode === '' ? 'selected' : ''; ?>>Izberi doživetje</option>
+                    <?php foreach ($dozivetja as $d): ?>
+                        <option value="<?php echo htmlspecialchars($d['code']); ?>" <?php echo ($selectedCode === $d['code']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($d['name']); ?>
+                        </option>
                     <?php endforeach; ?>
-                </div>
-                <p class="text-center text-white-50 mt-3">
-                    Skupaj: <?php echo count($izbrani); ?> oseb
-                </p>
+                </select>
+                <button class="btn btn-warning btn-lg" onclick="window.location.reload()">
+                    ↻
+                </button>
+            </div>
+
+            <?php if ($selectedCode !== ''): ?>
+                <?php if (count($izbrani) > 0): ?>
+                    <div class="names-list">
+                        <?php foreach ($izbrani as $ime): ?>
+                            <div class="name-card simple">
+                                <?php echo htmlspecialchars($ime); ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <p class="text-center text-white-50 mt-3">
+                        Skupaj: <?php echo count($izbrani); ?> oseb
+                    </p>
+                <?php else: ?>
+                    <div class="no-people">
+                        Ni izbranih oseb za to doživetje.
+                    </div>
+                <?php endif; ?>
             <?php else: ?>
                 <div class="no-people">
-                    Ni izbranih oseb za to doživetje.
+                    Izberi doživetje iz menija zgoraj.
                 </div>
             <?php endif; ?>
-        <?php else: ?>
-            <div class="no-people">
-                Izberi doživetje iz menija zgoraj.
-            </div>
-        <?php endif; ?>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"

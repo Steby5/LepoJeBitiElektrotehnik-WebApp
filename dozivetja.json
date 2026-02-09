@@ -3,16 +3,19 @@
         {
             "id": "name1",
             "dozivetje": "Dozivetje 1",
+            "barva": "#FF0000",
             "mesta": 10
         },
         {
             "id": "name2",
             "dozivetje": "Dozivetje 2",
+            "barva": "#00FF00",
             "mesta": 15
         },
         {
             "id": "name3",
             "dozivetje": "Dozivetje 3",
+            "barva": "#0000FF",
             "mesta": 8
         }
     ]

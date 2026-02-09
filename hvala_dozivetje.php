@@ -9,7 +9,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="css/cover.css" rel="stylesheet">
+    <link href="css/premium.css" rel="stylesheet">
 </head>
 
 <script>
@@ -27,7 +31,7 @@
             </div>
         </header>
 
-        <main class="px-3">
+        <main class="px-3 glass-card">
             <?php if (isset($_GET['message']) && $_GET['message'] === 'already'): ?>
                 <h1>Opozorilo</h1>
                 <p class="lead">Že si se prijavil/-a na doživetja v tem krogu!</p>

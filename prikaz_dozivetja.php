@@ -8,79 +8,10 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-    <style>
-        * {
-            font-family: 'Outfit', sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-        }
-
-        .aspect-ratio-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100vw;
-            height: calc(100vw * 9 / 16);
-            max-height: 100vh;
-            max-width: calc(100vh * 16 / 9);
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 3%;
-        }
-
-        h1 {
-            font-size: 5vmin;
-            font-weight: 700;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-            margin-bottom: 4vmin;
-            text-align: center;
-        }
-
-        .names-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2vmin;
-            width: 90%;
-            max-width: 1100px;
-        }
-
-        .name-card {
-            font-size: 2.5vmin;
-            font-weight: 600;
-            padding: 1.5vmin 2vmin;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 1.5vmin;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-
-        .no-content {
-            font-size: 3vmin;
-            opacity: 0.7;
-        }
-
-        .waiting {
-            font-size: 4vmin;
-            opacity: 0.6;
-        }
-    </style>
+    <link href="css/premium.css" rel="stylesheet">
 </head>
 
 <?php
@@ -89,6 +20,8 @@ require 'server_data.php';
 // Get currently displayed dozivetje ID
 $prikazId = trim(file_get_contents("prikaz_dozivetje.txt"));
 $dozivetjeName = '';
+$dozivetjeBarva = '#667eea';
+$dozivetjeLetter = '';
 $izbrani = [];
 
 if ($prikazId && $prikazId !== '0') {
@@ -96,15 +29,18 @@ if ($prikazId && $prikazId !== '0') {
     $conn = new mysqli($servername, $username, $password, $dbname);
     $conn->set_charset("utf8");
 
-    // Get dozivetje name
-    $stmtName = $conn->prepare("SELECT name FROM dozivetja WHERE id = ?");
-    $stmtName->bind_param("i", $prikazId);
-    $stmtName->execute();
-    $result = $stmtName->get_result();
-    if ($row = $result->fetch_assoc()) {
-        $dozivetjeName = $row['name'];
+    // Get all active dozivetja to determine letter position
+    $allDoz = $conn->query("SELECT id, name, barva FROM dozivetja WHERE active = 1 ORDER BY name");
+    $letterIndex = 0;
+    while ($row = $allDoz->fetch_assoc()) {
+        if ($row['id'] == $prikazId) {
+            $dozivetjeName = $row['name'];
+            $dozivetjeBarva = $row['barva'] ?: '#667eea';
+            $dozivetjeLetter = chr(65 + $letterIndex); // A, B, C, D...
+            break;
+        }
+        $letterIndex++;
     }
-    $stmtName->close();
 
     // Get izbrani for this dozivetje
     $stmtIzb = $conn->prepare("SELECT name FROM dozivetja_prijave WHERE dozivetje_id = ? AND izbran = 1 ORDER BY name");
@@ -136,29 +72,40 @@ if ($prikazId && $prikazId !== '0') {
     }, 2000);
 </script>
 
-<body>
-    <div class="aspect-ratio-container">
-        <?php if ($prikazId && $prikazId !== '0' && $dozivetjeName): ?>
-            <h1><?php echo htmlspecialchars($dozivetjeName); ?></h1>
+<body class="projection-view">
+    <div class="fullscreen-container">
+        <div class="aspect-ratio-container">
+            <?php if ($prikazId && $prikazId !== '0' && $dozivetjeName): ?>
+                <div class="d-flex align-items-center justify-content-center mb-5 gap-4">
+                    <div class="letter-box mb-0" style="border-color: <?php echo htmlspecialchars($dozivetjeBarva); ?>; 
+                                color: <?php echo htmlspecialchars($dozivetjeBarva); ?>;
+                                box-shadow: 0 0 40px <?php echo htmlspecialchars($dozivetjeBarva); ?>40;">
+                        <?php echo $dozivetjeLetter; ?>
+                    </div>
 
-            <?php if (count($izbrani) > 0): ?>
-                <div class="names-grid">
-                    <?php foreach ($izbrani as $ime): ?>
-                        <div class="name-card">
-                            <?php echo htmlspecialchars($ime); ?>
-                        </div>
-                    <?php endforeach; ?>
+                    <h1 class="mb-0 text-start"><?php echo htmlspecialchars($dozivetjeName); ?></h1>
                 </div>
+
+                <?php if (count($izbrani) > 0): ?>
+                    <div class="names-grid">
+                        <?php foreach ($izbrani as $ime): ?>
+                            <div class="name-card" style="border-left: 4px solid <?php echo htmlspecialchars($dozivetjeBarva); ?>;">
+                                <?php echo htmlspecialchars($ime); ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="no-content">
+                        Ni še izbranih udeležencev
+                    </div>
+                <?php endif; ?>
             <?php else: ?>
-                <div class="no-content">
-                    Ni še izbranih udeležencev
+                <div class="waiting">
+                    <i class="bi bi-hourglass-split mb-4 d-block" style="font-size: 8vmin;"></i>
+                    Čakam na izbiro doživetja...
                 </div>
             <?php endif; ?>
-        <?php else: ?>
-            <div class="waiting">
-                Čakam na izbiro doživetja...
-            </div>
-        <?php endif; ?>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
