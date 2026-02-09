@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+require_once 'server_data.php';
 
 // Function to check if user is logged in
 function require_login()
@@ -14,6 +14,5 @@ function require_login()
 // Function to verify password
 function verify_admin_password($password)
 {
-    require_once 'server_data.php';
-    return $password === ADMIN_PASSWORD;
+    return trim($password) === ADMIN_PASSWORD;
 }

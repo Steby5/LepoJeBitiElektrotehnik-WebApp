@@ -5,6 +5,8 @@ $username = "root";
 $password = "";
 $dbname = "elektrotehnik";
 
-// Admin password
-define('ADMIN_PASSWORD', 'your_password_here');
+// Admin password for nadzor.php access
+if (!defined('ADMIN_PASSWORD')) {
+    define('ADMIN_PASSWORD', 'your_password_here');
+}
 ?>
