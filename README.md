@@ -56,9 +56,21 @@ Moderna spletna aplikacija za upravljanje kviza "Lepo je biti elektrotehnik" in 
 
 ### Administratorski pogledi in Prikaz
 
-|                      Prijava                       |                    Nadzor kviza                     |                       Nadzor doživetij                        |                       Prikaz doživetja                        |
-| :------------------------------------------------: | :-------------------------------------------------: | :-----------------------------------------------------------: | :-----------------------------------------------------------: |
-| <img src="docs/screenshots/login.png" width="200"> | <img src="docs/screenshots/nadzor.png" width="200"> | <img src="docs/screenshots/nadzor_dozivetja.png" width="200"> | <img src="docs/screenshots/prikaz_dozivetja.png" width="200"> |
+|                  Prijava
+
+<img src="docs/screenshots/login.png" width="900">
+
+|                  Nadzor kviza
+
+<img src="docs/screenshots/nadzor.png" width="900">
+
+|                  Nadzor doživetij
+
+<img src="docs/screenshots/nadzor_dozivetja.png" width="900">
+
+|                  Prikaz doživetja
+
+<img src="docs/screenshots/prikaz_dozivetja.png" width="900">
 
 ### Uporabniški pogledi
 
@@ -66,11 +78,11 @@ Moderna spletna aplikacija za upravljanje kviza "Lepo je biti elektrotehnik" in 
 | :---------------------------------------------------: | :---------------------------------------------------: | :---------------------------------------------------: | :---------------------------------------------------: |
 | <img src="docs/screenshots/stanje_0.png" width="200"> | <img src="docs/screenshots/stanje_1.png" width="200"> | <img src="docs/screenshots/stanje_2.png" width="200"> | <img src="docs/screenshots/stanje_3.png" width="200"> |
 
-### Vodnik (Vodič)
+### Vodič
 
 |              Splošni pogled za vodiče              |                Izbira v pogledu za vodiče                 |
 | :------------------------------------------------: | :-------------------------------------------------------: |
-| <img src="docs/screenshots/vodic.png" width="300"> | <img src="docs/screenshots/vodic_izbira.png" width="300"> |
+| <img src="docs/screenshots/vodic.png" width="200"> | <img src="docs/screenshots/vodic_izbira.png" width="200"> |
 
 ## Licenca
 
