@@ -1,57 +1,77 @@
-# Lepo je biti elektrotehnik - Web Application
+# Lepo je biti elektrotehnik - Spletna Aplikacija
 
-Modern web application for managing the "Lepo je biti elektrotehnik" quiz and interactive experiences. Features a premium glassmorphic UI, real-time AJAX updates, and specialized mobile/admin views.
+Moderna spletna aplikacija za upravljanje kviza "Lepo je biti elektrotehnik" in interaktivnih doživetij. Odlikuje jo premijski "glassmorphism" uporabniški vmesnik, AJAX osveževanje v realnem času ter prilagojeni pogledi za mobilne naprave in administratorko upravljanje.
 
-## 🚀 Key Features
+## Ključne funkcionalnosti
 
-### 🎮 Quiz Management
+### Upravljanje kviza
 
-- **Live Contestant Registration**: Real-time contestant enrollment.
-- **Admin Dashboard**: Select contestants and manage game states.
-- **Audience Voting (Glas ljudstva)**: Interactive voting for multiple-choice questions.
-- **Real-time Stats**: Instant display of voting percentages with AJAX auto-refresh.
+- **Prijava tekmovalcev v živo**: Hitra in enostavna registracija udeležencev na dogodku.
+- **Nadzorna plošča**: Izbira tekmovalcev in upravljanje stanj igre preko osrednjega vmesnika.
+- **Glas ljudstva**: Interaktivno glasovanje občinstva za odgovore na vprašanja (A/B/C/D).
+- **Statistika v realnem času**: Takojšen prikaz odstotkov glasovanja z AJAX samodejnim osveževanjem.
 
-### 🎡 Experience Tracking (Doživetja)
+### Sledenje doživetjem (Doživetja)
 
-- **JSON Import**: Easy setup of experiences via JSON files.
-- **Capacity Management**: Automatic spot counting and availability tracking.
-- **Admin Control**: Select and clear participants with ease.
-- **Dedicated Displays**: Specialized views for projection or mobile info.
+- **Uvoz JSON**: Hitra nastavitev razpoložljivih doživetij preko JSON datotek.
+- **Upravljanje kapacitet**: Samodejno štetje prostih mest in sledenje razpoložljivosti.
+- **Nadzor udeležencev**: Enostavna izbira in brisanje prijavljenih oseb za posamezno doživetje.
+- **Namenski prikazi**: Specializirani pogledi za projekcijo ali informativne zaslone.
 
-### 🛡️ Security & Performance
+### Varnost in zmogljivost
 
-- **Anti-Duplication**: Session-based protection for voting and registration.
-- **Role-based Access**: Password-protected admin panels.
-- **High Concurrency**: Tested for up to 600 concurrent users.
+- **Preprečevanje podvajanja**: Zaščita na podlagi sej (session) za glasovanje in prijave.
+- **Varno upravljanje**: Administracijski paneli so zaščiteni z geslom.
+- **Visoka odzivnost**: Testirano za delovanje do 600 sočasnih uporabnikov.
 
-## 🛠️ Tech Stack
+## Tehnologije
 
-- **Backend**: PHP 8.1+
-- **Database**: MySQL 5.7+ / MariaDB
-- **Frontend**: Bootstrap 5.3, Bootstrap Icons, Inter Font
-- **Design**: Custom Glassmorphism UI (premium.css)
+- **Ozadje (Backend)**: PHP 8.1+
+- **Baza podatkov**: MySQL 5.7+ / MariaDB
+- **Vmesnik (Frontend)**: Bootstrap 5.3, Bootstrap Icons, pisava Inter
+- **Dizajn**: Prilagojen Glassmorphism UI (premium.css)
 
-## 📥 Installation
+## Namestitev
 
-1. **Clone the repository** to your web server root (e.g., `htdocs` for XAMPP).
-2. **Database Setup**:
-   - Create a database named `elektrotehnik`.
-   - Import `mysql/elektrotehnik.sql`.
-3. **Configuration**:
-   - Copy `server_data.sample.php` to `server_data.php`.
-   - Update `server_data.php` with your database credentials and set the `ADMIN_PASSWORD`.
-4. **Access**:
-   - User view: `index.php`
-   - Admin view: `nadzor.php` (default pass: `elektro`)
+1. **Kopirajte repozitorij** v korensko mapo vašega spletnega strežnika (npr. `htdocs` za XAMPP).
+2. **Nastavitev baze podatkov**:
+   - Ustvarite bazo z imenom `elektrotehnik`.
+   - Uvozite datoteko `mysql/elektrotehnik.sql`.
+3. **Konfiguracija**:
+   - Kopirajte `server_data.sample.php` v `server_data.php`.
+   - V `server_data.php` vstavite podatke za dostop do baze in nastavite `ADMIN_PASSWORD`.
+4. **Dostop**:
+   - Uporabniški pogled: `index.php`
+   - Nadzorna plošča: `nadzor.php` (privzeto geslo v vzorcu: `elektro`)
 
-## 📂 Project Structure
+## Struktura projekta
 
-- `index.php`: Main landing page for participants.
-- `nadzor.php`: Quiz admin dashboard.
-- `nadzor_dozivetja.php`: Experience admin dashboard.
-- `css/premium.css`: Core design system.
-- `api_*.php`: Backend endpoints for live updates.
+- `index.php`: Glavna stran za udeležence.
+- `nadzor.php`: Nadzorna plošča za kviz.
+- `nadzor_dozivetja.php`: Nadzorna plošča za doživetja.
+- `css/premium.css`: Osrednji stilski sistem.
+- `api_*.php`: Backend dostopne točke za posodobitve v živo.
 
-## 📄 License
+## Slike zaslona (Screenshots)
 
-MIT License - Developed by UL FE 2026
+### Administratorski pogledi in Prikaz
+
+|                      Prijava                       |                    Nadzor kviza                     |                       Nadzor doživetij                        |                       Prikaz doživetja                        |
+| :------------------------------------------------: | :-------------------------------------------------: | :-----------------------------------------------------------: | :-----------------------------------------------------------: |
+| <img src="docs/screenshots/login.png" width="200"> | <img src="docs/screenshots/nadzor.png" width="200"> | <img src="docs/screenshots/nadzor_dozivetja.png" width="200"> | <img src="docs/screenshots/prikaz_dozivetja.png" width="200"> |
+
+### Uporabniški pogledi
+
+|                       Mirovanje                       |                    Prijava na kviz                    |                      Glasovanje                       |                   Izbira doživetja                    |
+| :---------------------------------------------------: | :---------------------------------------------------: | :---------------------------------------------------: | :---------------------------------------------------: |
+| <img src="docs/screenshots/stanje_0.png" width="200"> | <img src="docs/screenshots/stanje_1.png" width="200"> | <img src="docs/screenshots/stanje_2.png" width="200"> | <img src="docs/screenshots/stanje_3.png" width="200"> |
+
+### Vodnik (Vodič)
+
+|              Splošni pogled za vodiče              |                Izbira v pogledu za vodiče                 |
+| :------------------------------------------------: | :-------------------------------------------------------: |
+| <img src="docs/screenshots/vodic.png" width="300"> | <img src="docs/screenshots/vodic_izbira.png" width="300"> |
+
+## Licenca
+
+MIT Licenca - Razvito s strani UL FE 2026
