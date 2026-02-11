@@ -42,7 +42,7 @@ Moderna spletna aplikacija za upravljanje kviza "Lepo je biti elektrotehnik" in 
    - V `server_data.php` vstavite podatke za dostop do baze in nastavite `ADMIN_PASSWORD`.
 4. **Dostop**:
    - Uporabniški pogled: `index.php`
-   - Nadzorna plošča: `nadzor.php` (privzeto geslo v vzorcu: `elektro`)
+   - Nadzorna plošča: `nadzor.php`
 
 ## Struktura projekta
 
