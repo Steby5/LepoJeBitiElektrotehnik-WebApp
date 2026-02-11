@@ -30,6 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `contestants` (
   `ID` int NOT NULL,
   `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `izbran` tinyint(1) NOT NULL DEFAULT '0',
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_slovenian_ci;
 
@@ -102,7 +103,29 @@ ALTER TABLE `contestants`
 -- AUTO_INCREMENT tabele `question`
 --
 ALTER TABLE `question`
-  MODIFY `ID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `ID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;-- --------------------------------------------------------
+
+--
+-- Struktura tabele `system_settings`
+--
+
+CREATE TABLE IF NOT EXISTS `system_settings` (
+  `setting_key` varchar(50) NOT NULL,
+  `setting_value` text,
+  PRIMARY KEY (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_slovenian_ci;
+
+--
+-- Odloži podatke za tabelo `system_settings`
+--
+
+INSERT INTO `system_settings` (`setting_key`, `setting_value`) VALUES
+('current_view', '0'),
+('selected_contestant_name', ''),
+('selected_contestant_id', '0'),
+('displayed_experience_id', '0')
+ON DUPLICATE KEY UPDATE `setting_value` = `setting_value`;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

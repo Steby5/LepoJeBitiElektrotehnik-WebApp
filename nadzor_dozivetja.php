@@ -19,7 +19,37 @@ require_login(); ?>
 
 <?php
 require 'server_data.php';
-$view = file_get_contents("pogled.txt");
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+$view = "0";
+$prikazId = "0";
+$prikazName = "Prazen prikaz";
+
+if (!$conn->connect_error) {
+    $conn->set_charset("utf8");
+
+    // Get view and display settings
+    $resS = $conn->query("SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('current_view', 'displayed_experience_id')");
+    $settings = [];
+    while ($sRow = $resS->fetch_assoc()) {
+        $settings[$sRow['setting_key']] = $sRow['setting_value'];
+    }
+
+    $view = isset($settings['current_view']) ? $settings['current_view'] : "0";
+    $prikazId = isset($settings['displayed_experience_id']) ? $settings['displayed_experience_id'] : "0";
+
+    // Get display name
+    if ($prikazId && $prikazId !== '0') {
+        $stmtP = $conn->prepare("SELECT name FROM dozivetja WHERE id = ?");
+        $stmtP->bind_param("i", $prikazId);
+        $stmtP->execute();
+        $resP = $stmtP->get_result();
+        if ($rowP = $resP->fetch_assoc()) {
+            $prikazName = $rowP['name'];
+        }
+        $stmtP->close();
+    }
+}
 ?>
 
 <script>
@@ -46,13 +76,14 @@ $view = file_get_contents("pogled.txt");
         const countEl = document.getElementById('pending-count-' + dozId);
         const listEl = document.getElementById('pending-list-' + dozId);
         const confirmBtn = document.getElementById('confirm-btn-' + dozId);
+        const available = countEl.getAttribute('data-total');
 
         if (!pendingSelections[dozId] || pendingSelections[dozId].length === 0) {
-            countEl.textContent = '0';
+            countEl.textContent = '0/' + available;
             listEl.innerHTML = '<span class="text-secondary" style="font-size: 0.85rem;">Klikni na imena za izbiro</span>';
             confirmBtn.disabled = true;
         } else {
-            countEl.textContent = pendingSelections[dozId].length;
+            countEl.textContent = pendingSelections[dozId].length + '/' + available;
             listEl.innerHTML = pendingSelections[dozId].map(p =>
                 '<span class="pending-tag">' + p.name + '</span>'
             ).join('');
@@ -89,9 +120,149 @@ $view = file_get_contents("pogled.txt");
             });
     }
 
+    function drawRandomForDozivetje(dozId, prostaMesta) {
+        fetch('api_nadzor_dozivetja.php')
+            .then(response => response.json())
+            .then(data => {
+                const doz = data.dozivetja.find(d => d.id == dozId);
+                if (!doz) return;
+
+                if (!pendingSelections[dozId]) pendingSelections[dozId] = [];
+
+                const needed = prostaMesta - pendingSelections[dozId].length;
+                if (needed <= 0) {
+                    alert("Vsa mesta so že zapolnjena.");
+                    return;
+                }
+
+                // Get all names currently pending in OTHER experiences
+                const otherPendingNames = [];
+                for (const dId in pendingSelections) {
+                    if (dId != dozId) {
+                        pendingSelections[dId].forEach(p => otherPendingNames.push(p.name));
+                    }
+                }
+
+                // Filter available candidates
+                const available = doz.prijavljeni.filter(p => {
+                    // Not globally selected
+                    if (data.selected_names.includes(p.name)) return false;
+                    // Not already pending in this experience
+                    if (pendingSelections[dozId].some(ps => ps.id === p.id)) return false;
+                    // Not already pending in OTHER experiences
+                    if (otherPendingNames.includes(p.name)) return false;
+                    return true;
+                });
+
+                if (available.length === 0) {
+                    alert("Ni več razpoložljivih prijavljenih kandidatov.");
+                    return;
+                }
+
+                // Shuffle and pick
+                const shuffled = available.sort(() => 0.5 - Math.random());
+                const picked = shuffled.slice(0, needed);
+
+                picked.forEach(p => {
+                    pendingSelections[dozId].push({ id: p.id, name: p.name });
+                    const btn = document.getElementById(`person-btn-${dozId}-${p.id}`);
+                    if (btn) btn.classList.add('pending');
+                });
+
+                updatePendingDisplay(dozId);
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Napaka pri pridobivanju podatkov.');
+            });
+    }
+
     function refreshFunction() {
         window.location.reload();
     }
+
+    function renderGrids(dozId, prijavljeni, izbrani, prostaMesta, maxSpots, barva) {
+        const prijavljeniGrid = document.getElementById('prijavljeni-grid-' + dozId);
+        const izbraniGrid = document.getElementById('izbrani-grid-' + dozId);
+        const spotsBadge = document.getElementById('spots-badge-' + dozId);
+        const pendingCount = document.getElementById('pending-count-' + dozId);
+
+        if (spotsBadge) {
+            spotsBadge.className = 'spots-badge ' + (prostaMesta > 0 ? 'available' : 'full');
+            spotsBadge.innerHTML = `<i class="bi bi-person-fill me-1"></i> ${prostaMesta} / ${maxSpots}`;
+        }
+
+        if (pendingCount) {
+            pendingCount.setAttribute('data-total', prostaMesta);
+            // Also need to adjust the fraction display if pending exists
+            const currentPendingCount = (pendingSelections[dozId] || []).length;
+            pendingCount.textContent = currentPendingCount + '/' + prostaMesta;
+        }
+
+        if (prijavljeniGrid) {
+            if (prijavljeni.length > 0) {
+                let html = '';
+                prijavljeni.forEach(p => {
+                    // Check if already selected elsewhere (from API) - currently not passed but we can optimize this
+                    // For now, let's focus on basic list update
+                    const isPending = pendingSelections[dozId] && pendingSelections[dozId].some(ps => ps.id == p.id);
+                    const pendingClass = isPending ? ' pending' : '';
+                    const safeName = p.name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    const escapedJsonName = p.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+                    if (prostaMesta > 0) {
+                        html += `<button class="person-btn${pendingClass}" id="person-btn-${dozId}-${p.id}" onclick="toggleSelection(${dozId}, ${p.id}, '${escapedJsonName}', this)">${safeName}</button>`;
+                    } else {
+                        html += `<button class="person-btn" id="person-btn-${dozId}-${p.id}" disabled>${safeName}</button>`;
+                    }
+                });
+                prijavljeniGrid.innerHTML = html;
+            } else {
+                prijavljeniGrid.innerHTML = '<span class="text-secondary small">Ni prijavljenih</span>';
+            }
+        }
+
+        if (izbraniGrid) {
+            if (izbrani.length > 0) {
+                let html = '';
+                izbrani.forEach(p => {
+                    const safeName = p.name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    html += `<a href="odstrani_dozivetje.php?id=${dozId}&ime=${encodeURIComponent(p.name)}&pid=${p.id}" class="person-btn selected small">${safeName} <i class="bi bi-check"></i></a>`;
+                });
+                izbraniGrid.innerHTML = html;
+            } else {
+                izbraniGrid.innerHTML = '<span class="text-secondary small">Ni izbranih</span>';
+            }
+        }
+    }
+
+    // AJAX Synchronization
+    var currentView = "<?php echo $view; ?>";
+    var currentPrikaz = "<?php echo $prikazId; ?>";
+
+    setInterval(function () {
+        fetch('api_nadzor_dozivetja.php')
+            .then(response => response.json())
+            .then(data => {
+                // Update grids for each experience
+                data.dozivetja.forEach(doz => {
+                    const prostaMesta = doz.max_spots - doz.izbrani.length;
+                    renderGrids(doz.id, doz.prijavljeni, doz.izbrani, prostaMesta, doz.max_spots, doz.barva);
+                });
+
+                // If system view changed, redirect to show proper buttons
+                if (data.view !== currentView) {
+                    window.location.reload();
+                }
+
+                // If displayed experience changed, update active classes
+                if (data.prikazId !== currentPrikaz) {
+                    currentPrikaz = data.prikazId;
+                    window.location.reload();
+                }
+            })
+            .catch(error => console.error('Sync error:', error));
+    }, 3000);
 </script>
 
 <body>
@@ -167,23 +338,6 @@ $view = file_get_contents("pogled.txt");
         <div class="row g-3 mb-4">
             <!-- Projection -->
             <div class="col-md-6">
-                <?php
-                $prikazId = trim(file_get_contents("prikaz_dozivetje.txt"));
-                $prikazName = "Prazen prikaz";
-                if ($prikazId && $prikazId !== '0') {
-                    $connPrikaz = new mysqli($servername, $username, $password, $dbname);
-                    $connPrikaz->set_charset("utf8");
-                    $stmtP = $connPrikaz->prepare("SELECT name FROM dozivetja WHERE id = ?");
-                    $stmtP->bind_param("i", $prikazId);
-                    $stmtP->execute();
-                    $resP = $stmtP->get_result();
-                    if ($rowP = $resP->fetch_assoc()) {
-                        $prikazName = $rowP['name'];
-                    }
-                    $stmtP->close();
-                    $connPrikaz->close();
-                }
-                ?>
                 <div class="glass-card compact-card projection-card h-100">
                     <div class="section-header">
                         <div class="icon" style="background: linear-gradient(135deg, var(--accent-info), #0891b2);">
@@ -276,17 +430,14 @@ $view = file_get_contents("pogled.txt");
             </div>
         <?php endif; ?>
 
-        
+
         <!-- Experience Cards (Grid Layout) -->
         <div class="row g-4">
             <?php
-            $connDoz = new mysqli($servername, $username, $password, $dbname);
-            $connDoz->set_charset("utf8");
-
             $dozQuery = "SELECT d.id, d.name, d.code, d.max_spots, d.barva,
                       (SELECT COUNT(*) FROM dozivetja_prijave WHERE dozivetje_id = d.id AND izbran = 1) as izbrani_count
                FROM dozivetja d WHERE d.active = 1 ORDER BY d.name";
-            $dozResult = $connDoz->query($dozQuery);
+            $dozResult = $conn->query($dozQuery);
 
             if ($dozResult && $dozResult->num_rows > 0) {
                 $letterIndex = 0;
@@ -295,118 +446,132 @@ $view = file_get_contents("pogled.txt");
                     $prostaMesta = $option['max_spots'] - $option['izbrani_count'];
                     $barva = $option['barva'] ?: '#8b5cf6';
 
-                    $stmtPrij = $connDoz->prepare("SELECT id, name FROM dozivetja_prijave WHERE dozivetje_id = ? AND izbran = 0 ORDER BY time");
+                    $stmtPrij = $conn->prepare("SELECT id, name FROM dozivetja_prijave WHERE dozivetje_id = ? AND izbran = 0 ORDER BY time");
                     $stmtPrij->bind_param("i", $option['id']);
                     $stmtPrij->execute();
                     $prijavljeni = $stmtPrij->get_result()->fetch_all(MYSQLI_ASSOC);
                     $stmtPrij->close();
 
-                    $stmtIzb = $connDoz->prepare("SELECT id, name FROM dozivetja_prijave WHERE dozivetje_id = ? AND izbran = 1 ORDER BY time");
+                    $stmtIzb = $conn->prepare("SELECT id, name FROM dozivetja_prijave WHERE dozivetje_id = ? AND izbran = 1 ORDER BY time");
                     $stmtIzb->bind_param("i", $option['id']);
                     $stmtIzb->execute();
                     $izbrani = $stmtIzb->get_result()->fetch_all(MYSQLI_ASSOC);
                     $stmtIzb->close();
                     ?>
 
-                            <div class="col-lg-6 col-xl-4 d-flex">
-                                <div class="experience-card flex-fill d-flex flex-column">
-                                    <div class="experience-header">
-                                        <div class="letter-badge"
-                                            style="border-color: <?php echo htmlspecialchars($barva); ?>; color: <?php echo htmlspecialchars($barva); ?>; box-shadow: 0 0 15px <?php echo htmlspecialchars($barva); ?>40;">
-                                            <?php echo $letter; ?>
-                                        </div>
-                                        <div class="experience-info flex-grow-1">
-                                            <h3 class="text-truncate" title="<?php echo htmlspecialchars($option['name']); ?>">
-                                                <?php echo htmlspecialchars($option['name']); ?>
-                                            </h3>
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <span class="spots-badge <?php echo $prostaMesta > 0 ? 'available' : 'full'; ?>">
-                                                    <i class="bi bi-person-fill me-1"></i>
-                                                    <?php echo $prostaMesta; ?> / <?php echo $option['max_spots']; ?>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="experience-body flex-grow-1">
-                                        <div class="row">
-                                            <div class="col-12 mb-3">
-                                                <div class="people-section">
-                                                    <h4><i class="bi bi-people"></i> Prijavljeni</h4>
-                                                    <div class="people-grid" style="max-height: 150px; overflow-y: auto;">
-                                                        <?php
-                                                        if (count($prijavljeni) > 0) {
-                                                            foreach ($prijavljeni as $oseba) {
-                                                                $stmtCheck = $connDoz->prepare("SELECT COUNT(*) as cnt FROM dozivetja_prijave WHERE name = ? AND izbran = 1");
-                                                                $stmtCheck->bind_param("s", $oseba['name']);
-                                                                $stmtCheck->execute();
-                                                                $checkResult = $stmtCheck->get_result()->fetch_assoc();
-                                                                $isAlreadySelected = $checkResult['cnt'] > 0;
-                                                                $stmtCheck->close();
-
-                                                                if ($isAlreadySelected) {
-                                                                    echo '<button class="person-btn warning" disabled title="Že izbran/-a drugje"><i class="bi bi-exclamation-triangle me-1"></i>' . htmlspecialchars($oseba['name']) . '</button>';
-                                                                } elseif ($prostaMesta > 0) {
-                                                                    echo '<button class="person-btn" onclick="toggleSelection(' . $option['id'] . ', ' . $oseba['id'] . ', \'' . addslashes(htmlspecialchars($oseba['name'])) . '\', this)">' . htmlspecialchars($oseba['name']) . '</button>';
-                                                                } else {
-                                                                    echo '<button class="person-btn" disabled>' . htmlspecialchars($oseba['name']) . '</button>';
-                                                                }
-                                                            }
-                                                        } else {
-                                                            echo '<span class="text-secondary small">Ni prijavljenih</span>';
-                                                        }
-                                                        ?>
-                                                    </div>
-
-                                                    <div class="pending-box mt-3">
-                                                        <div class="pending-header mb-2">
-                                                            <h5 class="small"><i class="bi bi-clock-history me-1"></i> Označeni: <span
-                                                                    id="pending-count-<?php echo $option['id']; ?>">0</span></h5>
-                                                            <button type="button" id="confirm-btn-<?php echo $option['id']; ?>"
-                                                                class="btn-confirm btn-sm py-1 px-2" disabled
-                                                                onclick="confirmSelections(<?php echo $option['id']; ?>, '<?php echo addslashes($option['code']); ?>')">
-                                                                <i class="bi bi-check2-circle"></i> Potrdi
-                                                            </button>
-                                                        </div>
-                                                        <div id="pending-list-<?php echo $option['id']; ?>" class="pending-list"
-                                                            style="min-height: 1rem;">
-                                                            <span class="text-secondary" style="font-size: 0.75rem;">Klikni na
-                                                                imena</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-12">
-                                                <div class="people-section">
-                                                    <h4><i class="bi bi-check-circle"></i> Izbrani</h4>
-                                                    <div class="people-grid" style="max-height: 100px; overflow-y: auto;">
-                                                        <?php
-                                                        if (count($izbrani) > 0) {
-                                                            foreach ($izbrani as $oseba) {
-                                                                echo '<a href="odstrani_dozivetje.php?id=' . urlencode($option['code']) . '&ime=' . urlencode($oseba['name']) . '&pid=' . $oseba['id'] . '" class="person-btn selected small">' . htmlspecialchars($oseba['name']) . ' <i class="bi bi-check"></i></a>';
-                                                            }
-                                                        } else {
-                                                            echo '<span class="text-secondary small">Ni izbranih</span>';
-                                                        }
-                                                        ?>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="experience-footer mt-auto">
-                                        <a href="pocisti_eno_dozivetje.php?id=<?php echo $option['id']; ?>"
-                                            class="btn-action w-100 text-center"
-                                            onclick="return confirm('Res želiš izbrisati vse prijave za <?php echo htmlspecialchars($option['name']); ?>?');">
-                                            <i class="bi bi-trash3 me-1"></i> Izbriši prijave
-                                        </a>
+                    <div class="col-lg-6 col-xl-4 d-flex">
+                        <div class="experience-card flex-fill d-flex flex-column">
+                            <div class="experience-header">
+                                <div class="letter-badge"
+                                    style="border-color: <?php echo htmlspecialchars($barva); ?>; color: <?php echo htmlspecialchars($barva); ?>; box-shadow: 0 0 15px <?php echo htmlspecialchars($barva); ?>40;">
+                                    <?php echo $letter; ?>
+                                </div>
+                                <div class="experience-info flex-grow-1">
+                                    <h3 class="text-truncate" title="<?php echo htmlspecialchars($option['name']); ?>">
+                                        <?php echo htmlspecialchars($option['name']); ?>
+                                    </h3>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span id="spots-badge-<?php echo $option['id']; ?>" class="spots-badge <?php echo $prostaMesta > 0 ? 'available' : 'full'; ?>">
+                                            <i class="bi bi-person-fill me-1"></i>
+                                            <?php echo $prostaMesta; ?> / <?php echo $option['max_spots']; ?>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <?php
-                            $letterIndex++;
+                            <div class="experience-body flex-grow-1">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <div class="people-section">
+                                            <h4><i class="bi bi-people"></i> Prijavljeni</h4>
+                                            <div id="prijavljeni-grid-<?php echo $option['id']; ?>" class="people-grid"
+                                                style="max-height: 150px; overflow-y: auto;">
+                                                <?php
+                                                if (count($prijavljeni) > 0) {
+                                                    foreach ($prijavljeni as $oseba) {
+                                                        $stmtCheck = $conn->prepare("SELECT COUNT(*) as cnt FROM dozivetja_prijave WHERE name = ? AND izbran = 1");
+                                                        $stmtCheck->bind_param("s", $oseba['name']);
+                                                        $stmtCheck->execute();
+                                                        $checkResult = $stmtCheck->get_result()->fetch_assoc();
+                                                        $isAlreadySelected = $checkResult['cnt'] > 0;
+                                                        $stmtCheck->close();
+
+                                                        if ($isAlreadySelected) {
+                                                            echo '<button class="person-btn warning" disabled title="Že izbran/-a drugje"><i class="bi bi-exclamation-triangle me-1"></i>' . htmlspecialchars($oseba['name']) . '</button>';
+                                                        } elseif ($prostaMesta > 0) {
+                                                            echo '<button class="person-btn" id="person-btn-' . $option['id'] . '-' . $oseba['id'] . '" onclick="toggleSelection(' . $option['id'] . ', ' . $oseba['id'] . ', \'' . addslashes(htmlspecialchars($oseba['name'])) . '\', this)">' . htmlspecialchars($oseba['name']) . '</button>';
+                                                        } else {
+                                                            echo '<button class="person-btn" id="person-btn-' . $option['id'] . '-' . $oseba['id'] . '" disabled>' . htmlspecialchars($oseba['name']) . '</button>';
+                                                        }
+                                                    }
+                                                } else {
+                                                    echo '<span class="text-secondary small">Ni prijavljenih</span>';
+                                                }
+                                                ?>
+                                            </div>
+
+                                            <div class="pending-box mt-3">
+                                                <div class="pending-header mb-2">
+                                                    <h5 class="small"><i class="bi bi-clock-history me-1"></i> Označeni: <span
+                                                            id="pending-count-<?php echo $option['id']; ?>"
+                                                            data-total="<?php echo $prostaMesta; ?>">0/<?php echo $prostaMesta; ?></span>
+                                                    </h5>
+                                                    <div class="d-flex gap-2">
+                                                        <?php if ($prostaMesta > 0): ?>
+                                                            <button type="button" class="btn-action p-1"
+                                                                onclick="drawRandomForDozivetje(<?php echo $option['id']; ?>, <?php echo $prostaMesta; ?>)"
+                                                                title="Žrebaj preostale"
+                                                                style="background: var(--accent-info); color: white; border: none; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
+                                                                <i class="bi bi-dice-5"></i>
+                                                            </button>
+                                                        <?php endif; ?>
+                                                        <button type="button" id="confirm-btn-<?php echo $option['id']; ?>"
+                                                            class="btn-confirm btn-sm py-1 px-2" disabled
+                                                            onclick="confirmSelections(<?php echo $option['id']; ?>, '<?php echo addslashes($option['code']); ?>')">
+                                                            <i class="bi bi-check2-circle"></i> Potrdi
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div id="pending-list-<?php echo $option['id']; ?>" class="pending-list"
+                                                    style="min-height: 1rem;">
+                                                    <span class="text-secondary" style="font-size: 0.75rem;">Klikni na
+                                                        imena</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="people-section">
+                                            <h4><i class="bi bi-check-circle"></i> Izbrani</h4>
+                                            <div id="izbrani-grid-<?php echo $option['id']; ?>" class="people-grid"
+                                                style="max-height: 100px; overflow-y: auto;">
+                                                <?php
+                                                if (count($izbrani) > 0) {
+                                                    foreach ($izbrani as $oseba) {
+                                                        echo '<a href="odstrani_dozivetje.php?id=' . urlencode($option['code']) . '&ime=' . urlencode($oseba['name']) . '&pid=' . $oseba['id'] . '" class="person-btn selected small">' . htmlspecialchars($oseba['name']) . ' <i class="bi bi-check"></i></a>';
+                                                    }
+                                                } else {
+                                                    echo '<span class="text-secondary small">Ni izbranih</span>';
+                                                }
+                                                ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="experience-footer mt-auto">
+                                <a href="pocisti_eno_dozivetje.php?id=<?php echo $option['id']; ?>"
+                                    class="btn-action w-100 text-center"
+                                    onclick="return confirm('Res želiš izbrisati vse prijave za <?php echo htmlspecialchars($option['name']); ?>?');">
+                                    <i class="bi bi-trash3 me-1"></i> Izbriši prijave
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <?php
+                    $letterIndex++;
                 }
             } else {
                 echo '<div class="col-12"><div class="glass-card text-center py-5">';
@@ -414,7 +579,7 @@ $view = file_get_contents("pogled.txt");
                 echo '<p class="text-secondary mt-3">Ni podatkov o doživetjih. Naloži JSON datoteko.</p>';
                 echo '</div></div>';
             }
-            $connDoz->close();
+            $conn->close();
             ?>
         </div>
     </div>

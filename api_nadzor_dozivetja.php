@@ -13,7 +13,7 @@ $conn->set_charset("utf8");
 
 // Get all active dozivetja with their registrations
 $dozivetja = [];
-$sql = "SELECT id, code, name, mesta FROM dozivetja WHERE active = 1 ORDER BY name";
+$sql = "SELECT id, code, name, max_spots FROM dozivetja WHERE active = 1 ORDER BY name";
 $result = $conn->query($sql);
 
 while ($row = $result->fetch_assoc()) {
@@ -21,7 +21,7 @@ while ($row = $result->fetch_assoc()) {
         'id' => $row['id'],
         'code' => $row['code'],
         'name' => $row['name'],
-        'mesta' => $row['mesta'],
+        'max_spots' => $row['max_spots'],
         'prijavljeni' => [],
         'izbrani' => []
     ];
@@ -49,17 +49,26 @@ while ($row = $result->fetch_assoc()) {
     $dozivetja[] = $dozivetje;
 }
 
+// Get system settings
+$resSettings = $conn->query("SELECT setting_key, setting_value FROM system_settings");
+$settings = [];
+while ($sRow = $resSettings->fetch_assoc()) {
+    $settings[$sRow['setting_key']] = $sRow['setting_value'];
+}
+
+// Get all names that are already selected anywhere to avoid duplicates across experiences
+$selectedNames = [];
+$resGlobal = $conn->query("SELECT DISTINCT name FROM dozivetja_prijave WHERE izbran = 1");
+while ($sRow = $resGlobal->fetch_assoc()) {
+    $selectedNames[] = $sRow['name'];
+}
+
 $conn->close();
-
-// Get view status
-$view = trim(file_get_contents("pogled.txt"));
-
-// Get current prikaz dozivetja
-$prikazId = trim(file_get_contents("prikaz_dozivetje.txt"));
 
 echo json_encode([
     'dozivetja' => $dozivetja,
-    'view' => $view,
-    'prikazId' => $prikazId
+    'selected_names' => $selectedNames,
+    'view' => isset($settings['current_view']) ? $settings['current_view'] : "0",
+    'prikazId' => isset($settings['displayed_experience_id']) ? $settings['displayed_experience_id'] : "0"
 ]);
 ?>

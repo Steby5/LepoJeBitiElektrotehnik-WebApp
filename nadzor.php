@@ -34,7 +34,8 @@ $contestantCount = $result->num_rows;
 $sql = "SELECT * FROM question ORDER BY ID DESC LIMIT 1";
 $resultQ = $conn->query($sql);
 
-$conn->close();
+$sqlSettings = "SELECT setting_key, setting_value FROM system_settings";
+$resSettings = $conn->query($sqlSettings);
 
 $idQ = "-1";
 $steviloGlasov = 0;
@@ -48,16 +49,59 @@ if ($resultQ->num_rows > 0) {
   $procentD = $steviloGlasov > 0 ? round((int) $rowQ['DCount'] / $steviloGlasov * 100) : 25;
 }
 
-$trenutniTekmovalec = file_get_contents("izbran_tekmovalec.txt");
+$conn->close();
+$settings = [];
+while ($sRow = $resSettings->fetch_assoc()) {
+  $settings[$sRow['setting_key']] = $sRow['setting_value'];
+}
+
+$trenutniTekmovalec = isset($settings['selected_contestant_name']) ? $settings['selected_contestant_name'] : "";
 if ($trenutniTekmovalec == "") {
   $trenutniTekmovalec = "Ni tekmovalca";
 }
-$view = file_get_contents("pogled.txt");
+$view = isset($settings['current_view']) ? $settings['current_view'] : "0";
 ?>
 
 <script>
   function refreshFunction() {
     window.location.reload();
+  }
+
+  var allContestants = [];
+  var currentDraw = null;
+
+  function drawRandomContestant() {
+    // Fetch latest data from database before drawing
+    fetch('api_nadzor_kviz.php')
+      .then(response => response.json())
+      .then(data => {
+        allContestants = data.contestants;
+        if (allContestants.length === 0) {
+          alert("Ni prijavljenih tekmovalcev za žreb.");
+          return;
+        }
+        const randomIndex = Math.floor(Math.random() * allContestants.length);
+        currentDraw = allContestants[randomIndex];
+        
+        document.getElementById('zreb-ime').innerText = currentDraw.name;
+        
+        const modalEl = document.getElementById('modalZreb');
+        let modal = bootstrap.Modal.getInstance(modalEl);
+        if (!modal) {
+          modal = new bootstrap.Modal(modalEl);
+        }
+        modal.show();
+      })
+      .catch(err => {
+        console.error('Fetch error:', err);
+        alert("Napaka pri pridobivanju podatkov iz baze.");
+      });
+  }
+
+  function confirmDraw() {
+    if (currentDraw) {
+      window.location.href = `izberi_tekmovalca.php?name=${encodeURIComponent(currentDraw.name)}&id=${currentDraw.ID}`;
+    }
   }
 
   // Auto-refresh for vote counts
@@ -68,6 +112,7 @@ $view = file_get_contents("pogled.txt");
       .then(data => {
         // Update contestant count
         document.querySelector('.badge-count').innerText = data.contestantCount + ' prijavljenih';
+        allContestants = data.contestants;
 
         // Update contestant list
         const listContainer = document.getElementById('contestant-list');
@@ -191,7 +236,9 @@ $view = file_get_contents("pogled.txt");
             <h2>Prijave na kviz</h2>
             <span class="badge-count"><?php echo $contestantCount; ?> prijavljenih</span>
           </div>
-          <p class="text-secondary mb-3">Klikni na ime za izbiro tekmovalca</p>
+          <div class="mb-3">
+            <p class="text-secondary mb-0">Klikni na ime za izbiro tekmovalca</p>
+          </div>
 
           <div id="contestant-list" class="contestant-grid">
             <?php
@@ -228,10 +275,16 @@ $view = file_get_contents("pogled.txt");
                 <h4>Trenutni tekmovalec</h4>
                 <div class="value" id="trenutni-tekmovalec"><?php echo htmlspecialchars($trenutniTekmovalec); ?></div>
               </div>
-              <button type="button" class="btn-action ms-auto p-2" data-bs-toggle="modal"
-                data-bs-target="#clearContestant">
-                <i class="bi bi-x-lg"></i>
-              </button>
+              <div class="d-flex gap-2 ms-auto">
+                <button class="btn-action p-2" onclick="drawRandomContestant()" title="Žrebaj novega" 
+                  style="background: var(--accent-info); color: white; border: none; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;">
+                  <i class="bi bi-dice-5"></i>
+                </button>
+                <button type="button" class="btn-action p-2" data-bs-toggle="modal" data-bs-target="#clearContestant" title="Odstrani"
+                  style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -338,6 +391,30 @@ $view = file_get_contents("pogled.txt");
           <a href="pocisti_prijave.php" class="btn btn-danger">
             <i class="bi bi-trash3 me-1"></i> Izbriši vse
           </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Žreb tekmovalca -->
+  <div class="modal fade" id="modalZreb" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-info">
+        <div class="modal-header bg-info text-white">
+          <h5 class="modal-title"><i class="bi bi-dice-5 me-2"></i>Naključni žreb</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center py-5">
+          <div class="text-secondary mb-2">Izžreban/-a je:</div>
+          <h1 class="display-4 fw-bold text-info" id="zreb-ime">...</h1>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-outline-light" onclick="drawRandomContestant()">
+            <i class="bi bi-arrow-repeat me-1"></i> Ponovni žreb
+          </button>
+          <button type="button" class="btn btn-info text-white" onclick="confirmDraw()">
+            <i class="bi bi-check2-circle me-1"></i> Potrdi tekmovalca
+          </button>
         </div>
       </div>
     </div>

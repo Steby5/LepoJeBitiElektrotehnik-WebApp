@@ -5,29 +5,34 @@ header('Content-Type: text/html; charset=utf-8');
 require 'server_data.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
-    // Get the ID of currently selected contestant
-    $selectedId = trim(file_get_contents("izbran_tekmovalec_id.txt"));
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
+    if (!$conn->connect_error) {
+        $conn->set_charset("utf8");
 
-    if ($selectedId && $selectedId !== "0") {
-        // Create connection
-        $conn = new mysqli($servername, $username, $password, $dbname);
-        if ($conn->connect_error) {
-            die("Povezava s strežnikom ni uspela: " . $conn->connect_error);
+        // Get the ID of currently selected contestant from database
+        $selectedId = "0";
+        $res = $conn->query("SELECT setting_value FROM system_settings WHERE setting_key = 'selected_contestant_id'");
+        if ($row = $res->fetch_assoc()) {
+            $selectedId = $row['setting_value'];
         }
 
-        // Restore contestant to list (set izbran = 0)
-        $stmt = $conn->prepare("UPDATE contestants SET izbran = 0 WHERE ID = ?");
-        $stmt->bind_param("i", $selectedId);
-        $stmt->execute();
-        $stmt->close();
+        if ($selectedId && $selectedId !== "0") {
+            // Restore contestant to list (set izbran = 0)
+            $stmt = $conn->prepare("UPDATE contestants SET izbran = 0 WHERE ID = ?");
+            $stmt->bind_param("i", $selectedId);
+            $stmt->execute();
+            $stmt->close();
+        }
+
+        // Clear the selected contestant in database
+        $conn->query("UPDATE system_settings SET setting_value = '' WHERE setting_key = 'selected_contestant_name'");
+        $conn->query("UPDATE system_settings SET setting_value = '0' WHERE setting_key = 'selected_contestant_id'");
+
         $conn->close();
     }
-
-    // Clear the selected contestant files
-    file_put_contents("izbran_tekmovalec.txt", "");
-    file_put_contents("izbran_tekmovalec_id.txt", "0");
 }
 
-header("Location: /nadzor.php");
+header("Location: nadzor.php");
 die();
 ?>

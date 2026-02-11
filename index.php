@@ -32,29 +32,23 @@ require 'server_data.php'; ?>
 
 
 <?php
-$view = file_get_contents("pogled.txt");
+$connView = new mysqli($servername, $username, $password, $dbname);
+$view = "0";
+if (!$connView->connect_error) {
+  $connView->set_charset("utf8");
+  $resView = $connView->query("SELECT setting_value FROM system_settings WHERE setting_key = 'current_view'");
+  if ($rowView = $resView->fetch_assoc()) {
+    $view = $rowView['setting_value'];
+  }
+  $connView->close();
+}
 ?>
-
-<script>
-  const interval = setInterval(function () {
-    if (localStorage.getItem("ljbe_index") === null) {
-      localStorage.setItem('ljbe_index', new Date());
-    } else {
-      var b = new Date();
-      a = Date.parse(localStorage.getItem('ljbe_index')); // parse to date object
-      if ((b - a) > 30000) {
-        localStorage.removeItem("ljbe_index");
-        window.location.replace("index.php");
-      }
-    }
-  }, 3000);
-</script>
 
 <body class="d-flex h-100 text-center text-bg-dark">
   <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-    <header class="mb-auto">
-      <div>
-        <h3 class="float-md-start mb-0">Lepo je biti elektrotehnik</h3>
+    <header class="mb-5">
+      <div class="text-center">
+        <h3 class="mb-0">Lepo je biti elektrotehnik</h3>
       </div>
     </header>
     <?php

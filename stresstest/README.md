@@ -1,118 +1,87 @@
-# Test Suite - Lepo je biti elektrotehnik
+# Testiranje in Simulacija (Python orodja)
 
-Celovita zbirka testov za testiranje web aplikacije.
+Ta mapa vsebuje Python skripte za stresno testiranje, varnostno preverjanje in hitro populacijo baze s testnimi podatki.
 
-## Zahteve
+## 📋 Zahteve
 
-```bash
-pip install aiohttp
-```
-
-## Uporaba
-
-### Vsi testi
-
-````bash
-```bash
-python test_suite.py --url http://localhost --test all
-````
-
-### Samo load testi (600 uporabnikov)
+Za delovanje vseh skript potrebujete Python 3.x in naslednje knjižnice:
 
 ```bash
-python test_suite.py --url http://localhost --test load
+pip install requests aiohttp faker
 ```
 
-### Samo varnostni testi
+---
+
+## 🚀 Glavna orodja
+
+### 1. Celovita testna suita (`test_suite.py`)
+
+Glavno orodje za preverjanje stabilnosti in varnosti aplikacije pod visoko obremenitvijo.
+
+- **Load testi**: Simulacija do 600 sočasnih uporabnikov (prijave, glasovanje, doživetja).
+- **Varnostni testi**: Avtomatsko preverjanje SQL injection, XSS in manipulacije sej.
+- **Robni primeri**: Testiranje unicode znakov, praznih vnosov in race-condition stanja.
+
+**Uporaba:**
 
 ```bash
-python test_suite.py --url http://localhost --test security
+# Zaženi vse teste
+python test_suite.py --url http://localhost/LepoJeBitiElektrotehnik-WebApp --test all
+
+# Samo load testi (hitrost in zmogljivost)
+python test_suite.py --test load
+
+# Samo varnostni testi
+python test_suite.py --test security
 ```
 
-### Samo robni primeri
+### 2. Pomočnik za populacijo podatkov (`prijave.py`)
+
+Skripta za hitro polnjenje baze s testnimi uporabniki (generira realistična slovenska imena).
+
+**Zmožnosti:**
+
+- **Samodejna zaznava**: Skripta sama najde aktivna doživetja na vstopni strani.
+- **Generiranje imen**: Uporablja nabor 100+ slovenskih imen in priimkov.
+- **Prilagodljivost**: Omogoča nastavitev števila prijav za kviz in doživetja posebej.
+
+**Primeri uporabe:**
 
 ```bash
-python test_suite.py --url http://localhost --test edge
+# Napolni kviz s 100 prijavami in vsako doživetje s 30 prijavami
+python prijave.py -k 100 -d 30
+
+# Prijavi ljudi na specifičen URL (npr. produkcija)
+python prijave.py --url http://elektrotehnika.info -k 50
+
+# Ročna določitev kod doživetij
+python prijave.py -d 10 -c vr_izkusnja escape_room
 ```
 
-## Konfiguracija
+---
 
-Privzeto testira z:
+## 🛠️ Hitri testi
 
-- 570 normalnih uporabnikov
-- 30 zlonamernih uporabnikov (napadi)
-- Skupaj 600 sočasnih uporabnikov
+### Preprosta obremenitev (`GET_load.py`)
 
-## Testi
+Minimalistična skripta za hitro preverjanje odzivnosti strežnika. Uporablja `ThreadPoolExecutor` za pošiljanje 400 sočasnih GET zahtev na vstopno stran.
 
-### Load testi
+**Uporaba:**
 
-| Test       | Opis                             |
-| ---------- | -------------------------------- |
-| Prijava    | 600 sočasnih prijav na kviz      |
-| Glasovanje | 600 sočasnih glasov              |
-| Doživetje  | 600 sočasnih prijav na doživetja |
-
-### Varnostni testi
-
-| Test                 | Opis                              |
-| -------------------- | --------------------------------- |
-| SQL Injection        | 8 različnih SQL injection napadov |
-| XSS                  | 7 različnih XSS napadov           |
-| Session Manipulation | Pokušaj lažnega session/cookie    |
-| Rate Limiting        | 100 hitrih zaporednih zahtev      |
-
-### Robni primeri
-
-| Test                 | Opis                                        |
-| -------------------- | ------------------------------------------- |
-| Duplicate Prevention | Ali se dvojne prijave blokirajo             |
-| Unicode              | Slovenščina, kitajščina, arabščina, emojiji |
-| Empty/Long Inputs    | Prazna, predolga in ekstremno dolga imena   |
-| Race Condition       | 10 sočasnih izbir istega tekmovalca         |
-| Invalid HTTP Methods | PUT, DELETE na forme                        |
-
-## Zlonamerni napadi (30 uporabnikov)
-
-Simulirani napadi vključujejo:
-
-- SQL injection (`'; DROP TABLE contestants; --`)
-- XSS (`<script>alert('XSS')</script>`)
-- Buffer overflow (`'A' * 10000`)
-- Path traversal (`../../../etc/passwd`)
-- Template injection (`{{7*7}}`)
-- Null bytes (`\x00\x01\x02`)
-- Unicode stress (100x emojiji)
-
-## Rezultati
-
-Testi se uspešno zaključijo če:
-
-- [PASS] Load testi: >95% uspešnost, povprečni odziv <5s
-- [PASS] Varnostni testi: vsi napadi blokirani
-- [PASS] Robni primeri: vsi primeri pravilno obdelani
-
-## Primer izhoda
-
+```bash
+python GET_load.py
 ```
-============================================================
-LEPO JE BITI ELEKTROTEHNIK - Test Suite
-Target: 600 users (570 normal, 30 malicious)
-URL: http://localhost
-============================================================
 
-LOAD TESTS
-========================================
-* Starting prijava load test with 600 users...
+---
 
-[PASS] Load Test - prijava
-   Total requests: 600
-   Successful: 598 (99.7%)
-   Failed: 2
-   Average response time: 234ms
-   Requests/second: 28.4
+## 📈 Razlaga rezultatov (`test_suite.py`)
 
-============================================================
-FINAL SCORE: 12/12 tests passed (100%)
-============================================================
-```
+Po končanem testu boste prejeli izpisa:
+
+- **Success Rate**: Odstotek uspešnih zahtev (cilj > 95%).
+- **Average Response Time**: Povprečen čas odziva strežnika (cilj < 500ms).
+- **Security Score**: Število ustavljenih zlonamernih napadov.
+
+---
+
+**Opozorilo**: Skripte so namenjene testiranju v lokalnem okolju ali na strežnikih, kjer imate dovoljenje za izvajanje stresnih testov.

@@ -27,19 +27,19 @@ if ($resultQ->num_rows > 0) {
     $question = $resultQ->fetch_assoc();
 }
 
-$conn->close();
-
-// Get view status
-$view = "";
-if (file_exists("pogled.txt")) {
-    $view = trim(file_get_contents("pogled.txt"));
+$conn = new mysqli($servername, $username, $password, $dbname);
+if (!$conn->connect_error) {
+    $conn->set_charset("utf8");
+    $resS = $conn->query("SELECT setting_key, setting_value FROM system_settings");
+    $settings = [];
+    while ($sRow = $resS->fetch_assoc()) {
+        $settings[$sRow['setting_key']] = $sRow['setting_value'];
+    }
+    $conn->close();
 }
 
-// Get current selected contestant
-$trenutniTekmovalec = "";
-if (file_exists("izbran_tekmovalec.txt")) {
-    $trenutniTekmovalec = file_get_contents("izbran_tekmovalec.txt");
-}
+$view = isset($settings['current_view']) ? $settings['current_view'] : "0";
+$trenutniTekmovalec = isset($settings['selected_contestant_name']) ? $settings['selected_contestant_name'] : "";
 if ($trenutniTekmovalec == "") {
     $trenutniTekmovalec = "Ni tekmovalca";
 }

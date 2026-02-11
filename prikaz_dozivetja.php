@@ -17,18 +17,21 @@
 <?php
 require 'server_data.php';
 
-// Get currently displayed dozivetje ID
-$prikazId = trim(file_get_contents("prikaz_dozivetje.txt"));
+$conn = new mysqli($servername, $username, $password, $dbname);
+$conn->set_charset("utf8");
+
+// Get currently displayed dozivetje ID from database
+$prikazId = '0';
+$resS = $conn->query("SELECT setting_value FROM system_settings WHERE setting_key = 'displayed_experience_id'");
+if ($rowS = $resS->fetch_assoc()) {
+    $prikazId = $rowS['setting_value'];
+}
 $dozivetjeName = '';
 $dozivetjeBarva = '#667eea';
 $dozivetjeLetter = '';
 $izbrani = [];
 
 if ($prikazId && $prikazId !== '0') {
-    // Create database connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
-    $conn->set_charset("utf8");
-
     // Get all active dozivetja to determine letter position
     $allDoz = $conn->query("SELECT id, name, barva FROM dozivetja WHERE active = 1 ORDER BY name");
     $letterIndex = 0;
@@ -51,25 +54,25 @@ if ($prikazId && $prikazId !== '0') {
         $izbrani[] = $row['name'];
     }
     $stmtIzb->close();
-
-    $conn->close();
 }
+$conn->close();
 ?>
 
 <script>
     // Store current prikaz ID to detect changes
     var currentPrikaz = "<?php echo $prikazId; ?>";
 
-    // Check for changes every 2 seconds
+    // Check for changes every 3 seconds via API
     setInterval(function () {
-        fetch('prikaz_dozivetje.txt?t=' + Date.now())
-            .then(response => response.text())
-            .then(newId => {
-                if (newId.trim() !== currentPrikaz) {
+        fetch('api_nadzor_dozivetja.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.prikazId !== currentPrikaz) {
                     window.location.reload();
                 }
-            });
-    }, 2000);
+            })
+            .catch(error => console.error('Sync error:', error));
+    }, 3000);
 </script>
 
 <body class="projection-view">

@@ -32,13 +32,8 @@
         </header>
 
         <main class="px-3 glass-card">
-            <?php if (isset($_GET['message']) && $_GET['message'] === 'already'): ?>
-                <h1>Opozorilo</h1>
-                <p class="lead">Že si se prijavil/-a na doživetja v tem krogu!</p>
-            <?php else: ?>
-                <h1>Hvala!</h1>
-                <p class="lead">Prijava na doživetje je bila uspešna. Počakaj na izbor!</p>
-            <?php endif; ?>
+            <h1>Hvala!</h1>
+            <p class="lead">Prijava na doživetje je bila uspešna. Počakaj na izbor!</p>
         </main>
 
         <footer class="mt-auto text-white-50">

@@ -6,12 +6,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get current dozivetja session ID from server
     $currentSessionId = trim(file_get_contents("dozivetja_session.txt"));
 
-    // Check if user already registered in THIS session
-    if (isset($_COOKIE['ljbe_dozivetja_session']) && $_COOKIE['ljbe_dozivetja_session'] === $currentSessionId) {
-        header("Location: /hvala_dozivetje.php?message=already");
-        die();
-    }
-
     try {
         // Get and sanitize input
         $ime = mb_convert_encoding($_POST["ime"], 'UTF-8');
