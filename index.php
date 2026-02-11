@@ -32,11 +32,12 @@ require 'server_data.php'; ?>
 
 
 <?php
-$connView = new mysqli($servername, $username, $password, $dbname);
+// single connection for the whole page
+$connGlobal = new mysqli($servername, $username, $password, $dbname);
 $view = "0";
-if (!$connView->connect_error) {
-  $connView->set_charset("utf8");
-  $resView = $connView->query("SELECT setting_value FROM system_settings WHERE setting_key = 'current_view'");
+if (!$connGlobal->connect_error) {
+  $connGlobal->set_charset("utf8");
+  $resView = $connGlobal->query("SELECT setting_value FROM system_settings WHERE setting_key = 'current_view'");
   if ($rowView = $resView->fetch_assoc()) {
     $view = $rowView['setting_value'];
   }
@@ -82,26 +83,13 @@ if (!$connView->connect_error) {
         <!-- END Prijava v kviz -->
       <?php
     } else if ($view == "2") {
-      // povezava na bazo podatkov
-      require 'server_data.php';
-      $conn = new mysqli($servername, $username, $password, $dbname);
-      if ($conn->connect_error)
-        die("Težava na strežniku, poskusi ponovno!" . $conn->connect_error);
-      $conn->set_charset("utf8");
       $sql = "SELECT ID, questionText, AText, BText, CText, DText FROM question ORDER BY ID DESC LIMIT 1";
-      $resultQ = $conn->query($sql);
-      $conn->close();
+      $resultQ = $connGlobal->query($sql);
 
-      if ($resultQ->num_rows > 0) {
+      if ($resultQ && $resultQ->num_rows > 0) {
         $row = $resultQ->fetch_assoc();
 
-        // Check if user already voted
-        $currentSessionId = "";
-        if (file_exists("glasovanje_session.txt")) {
-          $currentSessionId = trim(file_get_contents("glasovanje_session.txt"));
-        }
-
-        if ($currentSessionId !== "" && isset($_COOKIE['ljbe_glasovanje_session']) && $_COOKIE['ljbe_glasovanje_session'] === $currentSessionId) {
+        if ($currentGlasovanjeSession !== "" && isset($_COOKIE['ljbe_glasovanje_session']) && $_COOKIE['ljbe_glasovanje_session'] === $currentGlasovanjeSession) {
           ?>
               <main class="px-3 glass-card">
                 <h1>Hvala!</h1>
@@ -159,14 +147,13 @@ if (!$connView->connect_error) {
       }
     } else if ($view == "3") {
       // Doživetja - experiences signup from database
-      $connDoz = new mysqli($servername, $username, $password, $dbname);
-      $connDoz->set_charset("utf8");
-      $dozResult = $connDoz->query("SELECT code, name FROM dozivetja WHERE active = 1 ORDER BY name");
+      $dozResult = $connGlobal->query("SELECT code, name FROM dozivetja WHERE active = 1 ORDER BY name");
       $dozivetjaList = [];
-      while ($row = $dozResult->fetch_assoc()) {
-        $dozivetjaList[] = $row;
+      if ($dozResult) {
+        while ($row = $dozResult->fetch_assoc()) {
+          $dozivetjaList[] = $row;
+        }
       }
-      $connDoz->close();
       ?>
             <!-- Prijava na doživetje -->
             <main class="px-3 glass-card">
@@ -212,6 +199,9 @@ if (!$connView->connect_error) {
             </main>
             <!-- END Napaka -->
       <?php
+    }
+    if (isset($connGlobal) && $connGlobal instanceof mysqli) {
+      $connGlobal->close();
     }
     ?>
     <footer class="mt-auto text-white-50">

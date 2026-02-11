@@ -28,24 +28,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->set_charset("utf8");
 
         // Insert user into each selected experience
-        $stmt = $conn->prepare("INSERT INTO dozivetja_prijave (dozivetje_id, name, izbran) VALUES (?, ?, 0)");
+        $stmtInsert = $conn->prepare("INSERT INTO dozivetja_prijave (dozivetje_id, name, izbran) VALUES (?, ?, 0)");
+        $stmtGet = $conn->prepare("SELECT id FROM dozivetja WHERE code = ?");
 
         foreach ($dozivetje_ids as $dozivetje_code) {
-            // Get dozivetje_id from code
-            $stmtGet = $conn->prepare("SELECT id FROM dozivetja WHERE code = ?");
             $stmtGet->bind_param("s", $dozivetje_code);
             $stmtGet->execute();
-            $result = $stmtGet->get_result();
+            $res = $stmtGet->get_result();
 
-            if ($row = $result->fetch_assoc()) {
+            if ($row = $res->fetch_assoc()) {
                 $dozivetje_id = $row['id'];
-                $stmt->bind_param("is", $dozivetje_id, $ime);
-                $stmt->execute();
+                $stmtInsert->bind_param("is", $dozivetje_id, $ime);
+                $stmtInsert->execute();
             }
-            $stmtGet->close();
         }
 
-        $stmt->close();
+        $stmtGet->close();
+        $stmtInsert->close();
         $conn->close();
 
         // Set cookie with current session ID to prevent duplicate registration in this session

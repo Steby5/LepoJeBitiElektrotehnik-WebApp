@@ -27,16 +27,16 @@ if ($resultQ->num_rows > 0) {
     $question = $resultQ->fetch_assoc();
 }
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-if (!$conn->connect_error) {
-    $conn->set_charset("utf8");
-    $resS = $conn->query("SELECT setting_key, setting_value FROM system_settings");
-    $settings = [];
+// Get system settings
+$resS = $conn->query("SELECT setting_key, setting_value FROM system_settings");
+$settings = [];
+if ($resS) {
     while ($sRow = $resS->fetch_assoc()) {
         $settings[$sRow['setting_key']] = $sRow['setting_value'];
     }
-    $conn->close();
 }
+
+$conn->close();
 
 $view = isset($settings['current_view']) ? $settings['current_view'] : "0";
 $trenutniTekmovalec = isset($settings['selected_contestant_name']) ? $settings['selected_contestant_name'] : "";
