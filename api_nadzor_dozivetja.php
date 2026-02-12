@@ -13,7 +13,7 @@ $conn->set_charset("utf8");
 
 // Get all active dozivetja with their registrations
 $dozivetja = [];
-$sql = "SELECT id, code, name, max_spots FROM dozivetja WHERE active = 1 ORDER BY name";
+$sql = "SELECT id, code, name, max_spots, barva FROM dozivetja WHERE active = 1 ORDER BY id ASC";
 $result = $conn->query($sql);
 
 while ($row = $result->fetch_assoc()) {
@@ -22,6 +22,7 @@ while ($row = $result->fetch_assoc()) {
         'code' => $row['code'],
         'name' => $row['name'],
         'max_spots' => $row['max_spots'],
+        'barva' => $row['barva'],
         'prijavljeni' => [],
         'izbrani' => []
     ];

@@ -28,6 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     } else {
         die("Napaka pri nastavljanju tekmovalca. Vnesi ročno v programu kviza");
     }
+    file_put_contents("izbran_tekmovalec.txt", $name);
 }
 
 header("Location: nadzor.php");

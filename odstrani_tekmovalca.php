@@ -31,6 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
         $conn->close();
     }
+    file_put_contents("izbran_tekmovalec.txt", "");
 }
 
 header("Location: nadzor.php");

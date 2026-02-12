@@ -82,9 +82,9 @@ $view = isset($settings['current_view']) ? $settings['current_view'] : "0";
         }
         const randomIndex = Math.floor(Math.random() * allContestants.length);
         currentDraw = allContestants[randomIndex];
-        
+
         document.getElementById('zreb-ime').innerText = currentDraw.name;
-        
+
         const modalEl = document.getElementById('modalZreb');
         let modal = bootstrap.Modal.getInstance(modalEl);
         if (!modal) {
@@ -104,7 +104,6 @@ $view = isset($settings['current_view']) ? $settings['current_view'] : "0";
     }
   }
 
-  // Auto-refresh for vote counts
   // Auto-refresh for vote counts & contestants
   setInterval(function () {
     fetch('api_nadzor_kviz.php')
@@ -276,11 +275,12 @@ $view = isset($settings['current_view']) ? $settings['current_view'] : "0";
                 <div class="value" id="trenutni-tekmovalec"><?php echo htmlspecialchars($trenutniTekmovalec); ?></div>
               </div>
               <div class="d-flex gap-2 ms-auto">
-                <button class="btn-action p-2" onclick="drawRandomContestant()" title="Žrebaj novega" 
+                <button class="btn-action p-2" onclick="drawRandomContestant()" title="Žrebaj novega"
                   style="background: var(--accent-info); color: white; border: none; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;">
                   <i class="bi bi-dice-5"></i>
                 </button>
-                <button type="button" class="btn-action p-2" data-bs-toggle="modal" data-bs-target="#clearContestant" title="Odstrani"
+                <button type="button" class="btn-action p-2" data-bs-toggle="modal" data-bs-target="#clearContestant"
+                  title="Odstrani"
                   style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;">
                   <i class="bi bi-x-lg"></i>
                 </button>

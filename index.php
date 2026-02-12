@@ -30,18 +30,50 @@ require 'server_data.php'; ?>
 
 </head>
 
-
 <?php
-// single connection for the whole page
 $connGlobal = new mysqli($servername, $username, $password, $dbname);
 $view = "0";
 if (!$connGlobal->connect_error) {
   $connGlobal->set_charset("utf8");
+  if (file_exists("pogled.txt")) {
+    $txtView = trim(file_get_contents("pogled.txt"));
+    $resCurrentView = $connGlobal->query("SELECT setting_value FROM system_settings WHERE setting_key = 'current_view'");
+    if ($rowCurrentView = $resCurrentView->fetch_assoc()) {
+      $dbView = $rowCurrentView['setting_value'];
+      if ($txtView !== $dbView) {
+        $stmtView = $connGlobal->prepare("UPDATE system_settings SET setting_value = ? WHERE setting_key = 'current_view'");
+        $stmtView->bind_param("s", $txtView);
+        $stmtView->execute();
+        $stmtView->close();
+
+        if ($txtView == "1") {
+          $newSessionId = time() . '_' . uniqid();
+          file_put_contents("prijava_session.txt", $newSessionId);
+          @chown("prijava_session.txt", "administrator");
+        }
+        if ($txtView == "2") {
+          $newSessionId = time() . '_' . uniqid();
+          file_put_contents("glasovanje_session.txt", $newSessionId);
+          @chown("glasovanje_session.txt", "administrator");
+        }
+        if ($txtView == "3") {
+          $newSessionId = time() . '_' . uniqid();
+          file_put_contents("dozivetja_session.txt", $newSessionId);
+          @chown("dozivetja_session.txt", "administrator");
+        }
+      }
+    }
+  }
+
   $resView = $connGlobal->query("SELECT setting_value FROM system_settings WHERE setting_key = 'current_view'");
   if ($rowView = $resView->fetch_assoc()) {
     $view = $rowView['setting_value'];
   }
-  $connView->close();
+}
+
+$currentGlasovanjeSession = "";
+if (file_exists("glasovanje_session.txt")) {
+  $currentGlasovanjeSession = trim(file_get_contents("glasovanje_session.txt"));
 }
 ?>
 
@@ -88,66 +120,46 @@ if (!$connGlobal->connect_error) {
 
       if ($resultQ && $resultQ->num_rows > 0) {
         $row = $resultQ->fetch_assoc();
-
-        if ($currentGlasovanjeSession !== "" && isset($_COOKIE['ljbe_glasovanje_session']) && $_COOKIE['ljbe_glasovanje_session'] === $currentGlasovanjeSession) {
-          ?>
-              <main class="px-3 glass-card">
-                <h1>Hvala!</h1>
-                <p class="lead">Tvoj glas je bil zabeležen.</p>
-                <div class="mt-4">
-                  <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
-                </div>
-              </main>
-          <?php
-        } else {
-          ?>
-              <main class="px-3 glass-card">
-
-                <!-- Glas ljudstva -->
-                <form action="glasovanje.php" accept-charset="utf-8" method="post">
-                  <input type="hidden" id="Qid" name="Qid" value="<?php echo $row["ID"]; ?>">
-                  <h1><?php echo $row["questionText"]; ?></h1>
-                  <p class="lead">
-                  <div class="d-grid gap-2 col-11 mx-auto">
-                    <input type="radio" class="btn-check" name="odgovor" value="A" id="A" autocomplete="off" required>
-                    <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
-                      for="A"><?php echo $row["AText"]; ?></label>
-                    <input type="radio" class="btn-check" name="odgovor" value="B" id="B" autocomplete="off" required>
-                    <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
-                      for="B"><?php echo $row["BText"]; ?></label>
-                    <input type="radio" class="btn-check" name="odgovor" value="C" id="C" autocomplete="off" required>
-                    <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
-                      for="C"><?php echo $row["CText"]; ?></label>
-                    <input type="radio" class="btn-check" name="odgovor" value="D" id="D" autocomplete="off" required>
-                    <label class="btn btn-outline-success btn-outline-success-kviz btn-lg"
-                      for="D"><?php echo $row["DText"]; ?></label>
-                  </div>
-                  </p>
-                  <p class="lead">-</p>
-                  <p class="lead">
-                  <div class="d-grid gap-2 col-6 mx-auto">
-                    <input type="submit" name="submit" id="submit" value="Glasuj"
-                      class="btn btn-lg btn-light fw-bold border-white bg-white">
-                  </div>
-                  </p>
-                </form>
-                <!-- END Glas ljudstva -->
-              </main>
-          <?php
-        }
-      } else {
         ?>
             <main class="px-3 glass-card">
+
               <!-- Glas ljudstva -->
-              <h1>V sistemu ni vprašanj</h1>
-              <p class="lead">Poskusi ponovno čez nekaj trenutnkov</p>
+              <form action="glasovanje.php" accept-charset="utf-8" method="post">
+                <input type="hidden" id="Qid" name="Qid" value="<?php echo $row["ID"]; ?>">
+                <h1><?php echo $row["questionText"]; ?></h1>
+                <p class="lead">-</p>
+                <p class="lead">
+                <div class="d-grid gap-2 col-6 mx-auto">
+                  <button type="submit" name="odgovor" value="A"
+                    class="btn btn-lg btn-light fw-bold border-white bg-white"><?php echo $row["AText"]; ?></button>
+                </div>
+                </p>
+                <p class="lead">
+                <div class="d-grid gap-2 col-6 mx-auto">
+                  <button type="submit" name="odgovor" value="B"
+                    class="btn btn-lg btn-light fw-bold border-white bg-white"><?php echo $row["BText"]; ?></button>
+                </div>
+                </p>
+                <p class="lead">
+                <div class="d-grid gap-2 col-6 mx-auto">
+                  <button type="submit" name="odgovor" value="C"
+                    class="btn btn-lg btn-light fw-bold border-white bg-white"><?php echo $row["CText"]; ?></button>
+                </div>
+                </p>
+                <p class="lead">
+                <div class="d-grid gap-2 col-6 mx-auto">
+                  <button type="submit" name="odgovor" value="D"
+                    class="btn btn-lg btn-light fw-bold border-white bg-white"><?php echo $row["DText"]; ?></button>
+                </div>
+                </p>
+              </form>
               <!-- END Glas ljudstva -->
             </main>
         <?php
       }
     } else if ($view == "3") {
       // Doživetja - experiences signup from database
-      $dozResult = $connGlobal->query("SELECT code, name FROM dozivetja WHERE active = 1 ORDER BY name");
+      $dozResult = $connGlobal->query("SELECT code, name FROM dozivetja WHERE active = 1 ORDER BY code");
       $dozivetjaList = [];
       if ($dozResult) {
         while ($row = $dozResult->fetch_assoc()) {

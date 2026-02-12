@@ -32,21 +32,19 @@ $dozivetjeLetter = '';
 $izbrani = [];
 
 if ($prikazId && $prikazId !== '0') {
-    // Get all active dozivetja to determine letter position
-    $allDoz = $conn->query("SELECT id, name, barva FROM dozivetja WHERE active = 1 ORDER BY name");
+    $allDoz = $conn->query("SELECT id, code, name, barva FROM dozivetja WHERE active = 1 ORDER BY id DESC");
     $letterIndex = 0;
     while ($row = $allDoz->fetch_assoc()) {
         if ($row['id'] == $prikazId) {
             $dozivetjeName = $row['name'];
             $dozivetjeBarva = $row['barva'] ?: '#667eea';
-            $dozivetjeLetter = chr(65 + $letterIndex); // A, B, C, D...
+            $dozivetjeLetter = $row['code'];
             break;
         }
-        $letterIndex++;
     }
 
     // Get izbrani for this dozivetje
-    $stmtIzb = $conn->prepare("SELECT name FROM dozivetja_prijave WHERE dozivetje_id = ? AND izbran = 1 ORDER BY name");
+    $stmtIzb = $conn->prepare("SELECT name FROM dozivetja_prijave WHERE dozivetje_id = ? AND izbran = 1 ORDER BY id DESC");
     $stmtIzb->bind_param("i", $prikazId);
     $stmtIzb->execute();
     $resultIzb = $stmtIzb->get_result();

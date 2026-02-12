@@ -359,7 +359,7 @@ if (!$conn->connect_error) {
                         <?php
                         $connButtons = new mysqli($servername, $username, $password, $dbname);
                         $connButtons->set_charset("utf8");
-                        $btnResult = $connButtons->query("SELECT id, name FROM dozivetja WHERE active = 1 ORDER BY name");
+                        $btnResult = $connButtons->query("SELECT id, name FROM dozivetja WHERE active = 1 ORDER BY id");
                         while ($btn = $btnResult->fetch_assoc()) {
                             $isActive = ($prikazId == $btn['id']) ? 'active' : '';
                             echo '<a href="nastavi_prikaz_dozivetja.php?id=' . $btn['id'] . '" class="projection-btn ' . $isActive . '">' . htmlspecialchars($btn['name']) . '</a>';
@@ -436,13 +436,12 @@ if (!$conn->connect_error) {
             <?php
             $dozQuery = "SELECT d.id, d.name, d.code, d.max_spots, d.barva,
                       (SELECT COUNT(*) FROM dozivetja_prijave WHERE dozivetje_id = d.id AND izbran = 1) as izbrani_count
-               FROM dozivetja d WHERE d.active = 1 ORDER BY d.name";
+               FROM dozivetja d WHERE d.active = 1 ORDER BY d.id";
             $dozResult = $conn->query($dozQuery);
 
             if ($dozResult && $dozResult->num_rows > 0) {
-                $letterIndex = 0;
                 while ($option = $dozResult->fetch_assoc()) {
-                    $letter = chr(65 + $letterIndex);
+                    $letter = $option['code'];
                     $prostaMesta = $option['max_spots'] - $option['izbrani_count'];
                     $barva = $option['barva'] ?: '#8b5cf6';
 
@@ -464,14 +463,15 @@ if (!$conn->connect_error) {
                             <div class="experience-header">
                                 <div class="letter-badge"
                                     style="border-color: <?php echo htmlspecialchars($barva); ?>; color: <?php echo htmlspecialchars($barva); ?>; box-shadow: 0 0 15px <?php echo htmlspecialchars($barva); ?>40;">
-                                    <?php echo $letter; ?>
+                                    <?php echo htmlspecialchars($letter); ?>
                                 </div>
                                 <div class="experience-info flex-grow-1">
                                     <h3 class="text-truncate" title="<?php echo htmlspecialchars($option['name']); ?>">
                                         <?php echo htmlspecialchars($option['name']); ?>
                                     </h3>
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <span id="spots-badge-<?php echo $option['id']; ?>" class="spots-badge <?php echo $prostaMesta > 0 ? 'available' : 'full'; ?>">
+                                        <span id="spots-badge-<?php echo $option['id']; ?>"
+                                            class="spots-badge <?php echo $prostaMesta > 0 ? 'available' : 'full'; ?>">
                                             <i class="bi bi-person-fill me-1"></i>
                                             <?php echo $prostaMesta; ?> / <?php echo $option['max_spots']; ?>
                                         </span>
@@ -571,7 +571,6 @@ if (!$conn->connect_error) {
                     </div>
 
                     <?php
-                    $letterIndex++;
                 }
             } else {
                 echo '<div class="col-12"><div class="glass-card text-center py-5">';

@@ -1,9 +1,4 @@
 # System files
-pogled.txt
-*_session.txt
-izbran_tekmovalec.txt
-izbran_tekmovalec_id.txt
-prikaz_dozivetje.txt
 server_data.php
 
 # IDE

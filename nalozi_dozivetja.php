@@ -40,12 +40,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $conn->set_charset("utf8");
 
-    // Deactivate all existing dozivetja
-    $conn->query("UPDATE dozivetja SET active = 0");
+    $conn->query("DELETE FROM dozivetja");
 
-    // Insert or update each dozivetje
-    $stmt = $conn->prepare("INSERT INTO dozivetja (name, code, max_spots, barva, active) VALUES (?, ?, ?, ?, 1) 
-                            ON DUPLICATE KEY UPDATE name = VALUES(name), max_spots = VALUES(max_spots), barva = VALUES(barva), active = 1");
+    $stmt = $conn->prepare("INSERT INTO dozivetja (name, code, max_spots, barva, active) VALUES (?, ?, ?, ?, 1)");
 
     foreach ($data['options'] as $option) {
         if (!isset($option['id']) || !isset($option['dozivetje']) || !isset($option['mesta'])) {
